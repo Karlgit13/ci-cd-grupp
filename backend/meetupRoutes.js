@@ -1,4 +1,3 @@
-cd ~/skola/ci-cd-grupp/backend
 
 cat > meetupRoutes.js << 'EOF'
 const express = require('express');
@@ -212,4 +211,3 @@ router.post('/:id/reviews', authRequired, async (req, res) => {
 });
 
 module.exports = router;
-EOF

@@ -1,3 +1,5 @@
+cd ~/skola/ci-cd-grupp/backend
+
 cat > index.js << 'EOF'
 const express = require('express');
 const cors = require('cors');

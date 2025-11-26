@@ -1,4 +1,3 @@
-
 cat > meetupRoutes.js << 'EOF'
 const express = require('express');
 const db = require('./db');
@@ -210,4 +209,3 @@ router.post('/:id/reviews', authRequired, async (req, res) => {
   }
 });
 
-module.exports = router;

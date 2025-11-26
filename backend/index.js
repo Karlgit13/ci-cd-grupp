@@ -1,6 +1,3 @@
-cd ~/skola/ci-cd-grupp/backend
-
-cat > index.js << 'EOF'
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./authRoutes');
@@ -40,4 +37,3 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
-EOF

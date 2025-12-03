@@ -6,6 +6,10 @@ function Meetups() {
   const [meetups, setMeetups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
   const user = getCurrentUser();
   const navigate = useNavigate();
 
@@ -13,11 +17,18 @@ function Meetups() {
     fetchMeetups();
   }, []);
 
-  const fetchMeetups = async (search = '') => {
+  const fetchMeetups = async () => {
     try {
       setLoading(true);
       const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-      const url = search ? `${API_URL}/meetups?search=${encodeURIComponent(search)}` : `${API_URL}/meetups`;
+      
+      const params = new URLSearchParams();
+      if (searchQuery) params.append('search', searchQuery);
+      if (dateFilter) params.append('date', dateFilter);
+      if (locationFilter) params.append('location', locationFilter);
+      if (categoryFilter) params.append('category', categoryFilter);
+      
+      const url = params.toString() ? `${API_URL}/meetups?${params}` : `${API_URL}/meetups`;
       const response = await fetch(url);
       const data = await response.json();
       setMeetups(data);
@@ -30,8 +41,21 @@ function Meetups() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchMeetups(searchQuery);
+    fetchMeetups();
   };
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setDateFilter('');
+    setLocationFilter('');
+    setCategoryFilter('');
+  };
+
+  useEffect(() => {
+    if (!searchQuery && !dateFilter && !locationFilter && !categoryFilter) {
+      fetchMeetups();
+    }
+  }, [searchQuery, dateFilter, locationFilter, categoryFilter]);
 
   const handleLogout = () => {
     logout();
@@ -109,12 +133,37 @@ function Meetups() {
       padding: '14px 30px',
       fontSize: '16px',
       fontWeight: '600',
-      color: 'white',
-      background: 'white',
       color: '#667eea',
+      background: 'white',
       border: 'none',
       borderRadius: '12px',
       cursor: 'pointer'
+    },
+    filterToggle: {
+      padding: '10px 20px',
+      fontSize: '14px',
+      fontWeight: '600',
+      color: 'white',
+      background: 'rgba(255,255,255,0.2)',
+      border: '2px solid white',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      marginBottom: '20px'
+    },
+    filtersPanel: {
+      background: 'white',
+      borderRadius: '12px',
+      padding: '20px',
+      marginBottom: '20px',
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+      gap: '16px'
+    },
+    filterInput: {
+      padding: '10px',
+      fontSize: '14px',
+      border: '2px solid #e2e8f0',
+      borderRadius: '8px'
     },
     grid: {
       display: 'grid',
@@ -178,6 +227,9 @@ function Meetups() {
           <div style={styles.logo}>Meetup App</div>
         </Link>
         <div style={styles.userInfo}>
+          <Link to="/create-meetup" style={{ ...styles.button, textDecoration: 'none', display: 'inline-block' }}>
+            Create Meetup
+          </Link>
           <Link to="/profile" style={{ color: '#1a202c', textDecoration: 'none', fontWeight: '600', fontSize: '14px' }}>
             Profile
           </Link>
@@ -202,6 +254,67 @@ function Meetups() {
               Search
             </button>
           </form>
+
+          <button 
+            onClick={() => setShowFilters(!showFilters)} 
+            style={styles.filterToggle}
+          >
+            {showFilters ? 'Hide Filters' : 'Show Filters'}
+          </button>
+
+          {showFilters && (
+            <div style={styles.filtersPanel}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '600', color: '#4a5568' }}>
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  style={styles.filterInput}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '600', color: '#4a5568' }}>
+                  Location
+                </label>
+                <input
+                  type="text"
+                  placeholder="Filter by location"
+                  value={locationFilter}
+                  onChange={(e) => setLocationFilter(e.target.value)}
+                  style={styles.filterInput}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '600', color: '#4a5568' }}>
+                  Category
+                </label>
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  style={styles.filterInput}
+                >
+                  <option value="">All Categories</option>
+                  <option value="tech">Tech</option>
+                  <option value="business">Business</option>
+                  <option value="health">Health</option>
+                  <option value="sports">Sports</option>
+                  <option value="art">Art</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                <button 
+                  onClick={handleClearFilters}
+                  style={{ ...styles.filterInput, cursor: 'pointer', background: '#e53e3e', color: 'white', border: 'none', fontWeight: '600' }}
+                >
+                  Clear Filters
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         
         {loading ? (

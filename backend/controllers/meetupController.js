@@ -2,7 +2,7 @@ const pool = require('../config/db');
 
 const getAllMeetups = async (req, res) => {
   try {
-    const { search } = req.query;
+    const { search, date, location, category } = req.query;
     
     let query = `SELECT m.*, u.username as host_name,
        (SELECT COUNT(*) FROM registrations WHERE meetup_id = m.id) as registered_count
@@ -11,10 +11,30 @@ const getAllMeetups = async (req, res) => {
        WHERE m.date >= NOW()`;
     
     const params = [];
+    let paramCount = 0;
     
     if (search) {
-      query += ` AND (m.title ILIKE $1 OR m.description ILIKE $1)`;
+      paramCount++;
+      query += ` AND (m.title ILIKE $${paramCount} OR m.description ILIKE $${paramCount})`;
       params.push(`%${search}%`);
+    }
+
+    if (date) {
+      paramCount++;
+      query += ` AND DATE(m.date) = $${paramCount}`;
+      params.push(date);
+    }
+
+    if (location) {
+      paramCount++;
+      query += ` AND m.location ILIKE $${paramCount}`;
+      params.push(`%${location}%`);
+    }
+
+    if (category) {
+      paramCount++;
+      query += ` AND m.category = $${paramCount}`;
+      params.push(category);
     }
     
     query += ` ORDER BY m.date ASC`;

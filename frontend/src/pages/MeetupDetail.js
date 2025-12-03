@@ -6,6 +6,10 @@ function MeetupDetail() {
   const [meetup, setMeetup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
   const [message, setMessage] = useState('');
   const { id } = useParams();
   const user = getCurrentUser();
@@ -13,6 +17,8 @@ function MeetupDetail() {
 
   useEffect(() => {
     fetchMeetup();
+    checkRegistration();
+    fetchReviews();
   }, [id]);
 
   const fetchMeetup = async () => {
@@ -25,6 +31,20 @@ function MeetupDetail() {
       console.error('Error fetching meetup:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkRegistration = async () => {
+    try {
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+      const token = getAuthToken();
+      const response = await fetch(`${API_URL}/users/me/meetups`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const meetups = await response.json();
+      setIsRegistered(meetups.some(m => m.id === parseInt(id)));
+    } catch (error) {
+      console.error('Error checking registration:', error);
     }
   };
 
@@ -47,6 +67,7 @@ function MeetupDetail() {
 
       if (response.ok) {
         setMessage('Successfully registered!');
+        setIsRegistered(true);
         fetchMeetup();
       } else {
         setMessage(data.error || 'Registration failed');
@@ -55,6 +76,84 @@ function MeetupDetail() {
       setMessage('Error registering for meetup');
     } finally {
       setRegistering(false);
+    }
+  };
+
+  const handleUnregister = async () => {
+    if (!window.confirm('Are you sure you want to unregister from this meetup?')) {
+      return;
+    }
+
+    setRegistering(true);
+    setMessage('');
+    
+    try {
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+      const token = getAuthToken();
+      
+      const response = await fetch(`${API_URL}/meetups/${id}/register`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage('Successfully unregistered!');
+        setIsRegistered(false);
+        fetchMeetup();
+      } else {
+        setMessage(data.error || 'Unregistration failed');
+      }
+    } catch (error) {
+      setMessage('Error unregistering from meetup');
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  const fetchReviews = async () => {
+    try {
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+      const response = await fetch(`${API_URL}/meetups/${id}/reviews`);
+      const data = await response.json();
+      setReviews(data);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    setMessage('');
+
+    try {
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+      const token = getAuthToken();
+      
+      const response = await fetch(`${API_URL}/meetups/${id}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ rating, comment })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage('Review submitted successfully!');
+        setComment('');
+        setRating(5);
+        fetchReviews();
+      } else {
+        setMessage(data.error || 'Failed to submit review');
+      }
+    } catch (error) {
+      setMessage('Error submitting review');
     }
   };
 
@@ -170,6 +269,28 @@ function MeetupDetail() {
       marginTop: '16px',
       textAlign: 'center',
       fontWeight: '600'
+    },
+    reviewSection: {
+      marginTop: '40px',
+      paddingTop: '40px',
+      borderTop: '2px solid #e2e8f0'
+    },
+    reviewForm: {
+      background: '#f7fafc',
+      padding: '24px',
+      borderRadius: '12px',
+      marginBottom: '30px'
+    },
+    reviewCard: {
+      background: '#f7fafc',
+      padding: '20px',
+      borderRadius: '12px',
+      marginBottom: '16px'
+    },
+    stars: {
+      color: '#f6ad55',
+      fontSize: '18px',
+      marginBottom: '8px'
     }
   };
 
@@ -237,17 +358,32 @@ function MeetupDetail() {
           </div>
         </div>
 
-        <button 
-          onClick={handleRegister} 
-          disabled={registering || isFull}
-          style={{
-            ...styles.registerButton,
-            opacity: registering || isFull ? 0.5 : 1,
-            cursor: registering || isFull ? 'not-allowed' : 'pointer'
-          }}
-        >
-          {registering ? 'Registering...' : isFull ? 'Meetup Full' : 'Register for Meetup'}
-        </button>
+        {isRegistered ? (
+          <button 
+            onClick={handleUnregister} 
+            disabled={registering}
+            style={{
+              ...styles.registerButton,
+              background: '#e53e3e',
+              opacity: registering ? 0.5 : 1,
+              cursor: registering ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {registering ? 'Processing...' : 'Unregister from Meetup'}
+          </button>
+        ) : (
+          <button 
+            onClick={handleRegister} 
+            disabled={registering || isFull}
+            style={{
+              ...styles.registerButton,
+              opacity: registering || isFull ? 0.5 : 1,
+              cursor: registering || isFull ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {registering ? 'Registering...' : isFull ? 'Meetup Full' : 'Register for Meetup'}
+          </button>
+        )}
 
         {message && (
           <div style={{
@@ -258,6 +394,70 @@ function MeetupDetail() {
             {message}
           </div>
         )}
+
+        <div style={styles.reviewSection}>
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', color: '#1a202c' }}>
+            Reviews ({reviews.length})
+          </h2>
+
+          {meetup && new Date(meetup.date) < new Date() && isRegistered && (
+            <div style={styles.reviewForm}>
+              <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#1a202c' }}>
+                Leave a Review
+              </h3>
+              <form onSubmit={handleSubmitReview}>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#4a5568' }}>
+                    Rating
+                  </label>
+                  <select 
+                    value={rating} 
+                    onChange={(e) => setRating(parseInt(e.target.value))}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #e2e8f0' }}
+                  >
+                    <option value={5}>⭐⭐⭐⭐⭐ - Excellent</option>
+                    <option value={4}>⭐⭐⭐⭐ - Good</option>
+                    <option value={3}>⭐⭐⭐ - Average</option>
+                    <option value={2}>⭐⭐ - Poor</option>
+                    <option value={1}>⭐ - Terrible</option>
+                  </select>
+                </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#4a5568' }}>
+                    Comment
+                  </label>
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    rows={4}
+                    required
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #e2e8f0', fontFamily: 'inherit' }}
+                  />
+                </div>
+                <button type="submit" style={{ ...styles.button, width: 'auto' }}>
+                  Submit Review
+                </button>
+              </form>
+            </div>
+          )}
+
+          {reviews.length === 0 ? (
+            <p style={{ textAlign: 'center', color: '#718096', padding: '20px' }}>No reviews yet</p>
+          ) : (
+            reviews.map(review => (
+              <div key={review.id} style={styles.reviewCard}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <span style={{ fontWeight: '600', color: '#1a202c' }}>{review.username}</span>
+                  <span style={styles.stars}>{'⭐'.repeat(review.rating)}</span>
+                </div>
+                <p style={{ color: '#4a5568', lineHeight: '1.6' }}>{review.comment}</p>
+                <p style={{ fontSize: '12px', color: '#a0aec0', marginTop: '8px' }}>
+                  {new Date(review.created_at).toLocaleDateString()}
+                </p>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

@@ -2,14 +2,44 @@ const pool = require('../config/db');
 
 const getAllMeetups = async (req, res) => {
   try {
-    const result = await pool.query(
-      `SELECT m.*, u.username as host_name,
+    const { search, date, location, category } = req.query;
+    
+    let query = `SELECT m.*, u.username as host_name,
        (SELECT COUNT(*) FROM registrations WHERE meetup_id = m.id) as registered_count
        FROM meetups m
        JOIN users u ON m.host_id = u.id
-       WHERE m.date >= NOW()
-       ORDER BY m.date ASC`
-    );
+       WHERE m.date >= NOW()`;
+    
+    const params = [];
+    let paramCount = 0;
+    
+    if (search) {
+      paramCount++;
+      query += ` AND (m.title ILIKE $${paramCount} OR m.description ILIKE $${paramCount})`;
+      params.push(`%${search}%`);
+    }
+
+    if (date) {
+      paramCount++;
+      query += ` AND DATE(m.date) = $${paramCount}`;
+      params.push(date);
+    }
+
+    if (location) {
+      paramCount++;
+      query += ` AND m.location ILIKE $${paramCount}`;
+      params.push(`%${location}%`);
+    }
+
+    if (category) {
+      paramCount++;
+      query += ` AND m.category = $${paramCount}`;
+      params.push(category);
+    }
+    
+    query += ` ORDER BY m.date ASC`;
+    
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
@@ -95,10 +125,36 @@ const registerForMeetup = async (req, res) => {
   }
 };
 
+const unregisterFromMeetup = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const registration = await pool.query(
+      'SELECT * FROM registrations WHERE user_id = $1 AND meetup_id = $2',
+      [userId, id]
+    );
+
+    if (registration.rows.length === 0) {
+      return res.status(404).json({ error: 'Registration not found' });
+    }
+
+    await pool.query(
+      'DELETE FROM registrations WHERE user_id = $1 AND meetup_id = $2',
+      [userId, id]
+    );
+
+    res.json({ message: 'Unregistered successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 module.exports = {
   getAllMeetups,
   getMeetupById,
   createMeetup,
-  registerForMeetup
+  registerForMeetup,
+  unregisterFromMeetup
 };
 

@@ -22,38 +22,115 @@ function Login() {
     }
   };
 
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px'
+    },
+    card: {
+      background: 'white',
+      borderRadius: '16px',
+      boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+      padding: '40px',
+      maxWidth: '420px',
+      width: '100%'
+    },
+    title: {
+      fontSize: '28px',
+      fontWeight: 'bold',
+      marginBottom: '8px',
+      color: '#1a202c',
+      textAlign: 'center'
+    },
+    subtitle: {
+      color: '#718096',
+      textAlign: 'center',
+      marginBottom: '30px'
+    },
+    error: {
+      background: '#fed7d7',
+      color: '#c53030',
+      padding: '12px',
+      borderRadius: '8px',
+      marginBottom: '20px',
+      fontSize: '14px'
+    },
+    inputGroup: {
+      marginBottom: '20px'
+    },
+    input: {
+      width: '100%',
+      padding: '12px 16px',
+      fontSize: '16px',
+      border: '2px solid #e2e8f0',
+      borderRadius: '8px',
+      outline: 'none',
+      transition: 'border-color 0.3s'
+    },
+    button: {
+      width: '100%',
+      padding: '14px',
+      fontSize: '16px',
+      fontWeight: '600',
+      color: 'white',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      border: 'none',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      transition: 'transform 0.2s',
+      marginTop: '10px'
+    },
+    footer: {
+      marginTop: '24px',
+      textAlign: 'center',
+      color: '#718096',
+      fontSize: '14px'
+    },
+    link: {
+      color: '#667eea',
+      textDecoration: 'none',
+      fontWeight: '600'
+    }
+  };
+
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
-      <h2>Login</h2>
-      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px', fontSize: '16px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '15px' }}>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px', fontSize: '16px' }}
-          />
-        </div>
-        <button type="submit" style={{ width: '100%', padding: '10px', fontSize: '16px' }}>
-          Login
-        </button>
-      </form>
-      <p style={{ marginTop: '15px' }}>
-        Don't have an account? <Link to="/register">Register</Link>
-      </p>
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <h2 style={styles.title}>Welcome Back</h2>
+        <p style={styles.subtitle}>Login to your account</p>
+        {error && <div style={styles.error}>{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <div style={styles.inputGroup}>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={styles.input}
+            />
+          </div>
+          <div style={styles.inputGroup}>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={styles.input}
+            />
+          </div>
+          <button type="submit" style={styles.button}>
+            Login
+          </button>
+        </form>
+        <p style={styles.footer}>
+          Don't have an account? <Link to="/register" style={styles.link}>Register</Link>
+        </p>
+      </div>
     </div>
   );
 }

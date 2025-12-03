@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const meetupRoutes = require('./routes/meetups');
+const userRoutes = require('./routes/users');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -17,6 +18,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/meetups', meetupRoutes);
+app.use('/api/users', userRoutes);
 
 app.use(errorHandler);
 

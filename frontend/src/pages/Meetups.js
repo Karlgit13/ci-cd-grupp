@@ -5,6 +5,7 @@ import { getCurrentUser, logout } from '../services/api';
 function Meetups() {
   const [meetups, setMeetups] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const user = getCurrentUser();
   const navigate = useNavigate();
 
@@ -12,10 +13,12 @@ function Meetups() {
     fetchMeetups();
   }, []);
 
-  const fetchMeetups = async () => {
+  const fetchMeetups = async (search = '') => {
     try {
+      setLoading(true);
       const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-      const response = await fetch(`${API_URL}/meetups`);
+      const url = search ? `${API_URL}/meetups?search=${encodeURIComponent(search)}` : `${API_URL}/meetups`;
+      const response = await fetch(url);
       const data = await response.json();
       setMeetups(data);
     } catch (error) {
@@ -23,6 +26,11 @@ function Meetups() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    fetchMeetups(searchQuery);
   };
 
   const handleLogout = () => {
@@ -80,6 +88,33 @@ function Meetups() {
       color: 'white',
       marginBottom: '30px',
       textAlign: 'center'
+    },
+    searchContainer: {
+      maxWidth: '600px',
+      margin: '0 auto 30px'
+    },
+    searchForm: {
+      display: 'flex',
+      gap: '12px'
+    },
+    searchInput: {
+      flex: 1,
+      padding: '14px 20px',
+      fontSize: '16px',
+      border: 'none',
+      borderRadius: '12px',
+      outline: 'none'
+    },
+    searchButton: {
+      padding: '14px 30px',
+      fontSize: '16px',
+      fontWeight: '600',
+      color: 'white',
+      background: 'white',
+      color: '#667eea',
+      border: 'none',
+      borderRadius: '12px',
+      cursor: 'pointer'
     },
     grid: {
       display: 'grid',
@@ -139,10 +174,13 @@ function Meetups() {
   return (
     <div style={styles.container}>
       <div style={styles.navbar}>
-        <Link to="/" style={{ textDecoration: 'none' }}>
+        <Link to="/meetups" style={{ textDecoration: 'none' }}>
           <div style={styles.logo}>Meetup App</div>
         </Link>
         <div style={styles.userInfo}>
+          <Link to="/profile" style={{ color: '#1a202c', textDecoration: 'none', fontWeight: '600', fontSize: '14px' }}>
+            Profile
+          </Link>
           <span style={{ fontWeight: '600', color: '#1a202c' }}>Hi, {user.username}!</span>
           <button onClick={handleLogout} style={styles.button}>Logout</button>
         </div>
@@ -150,6 +188,21 @@ function Meetups() {
 
       <div style={styles.content}>
         <h1 style={styles.title}>Upcoming Meetups</h1>
+        
+        <div style={styles.searchContainer}>
+          <form onSubmit={handleSearch} style={styles.searchForm}>
+            <input
+              type="text"
+              placeholder="Search meetups..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={styles.searchInput}
+            />
+            <button type="submit" style={styles.searchButton}>
+              Search
+            </button>
+          </form>
+        </div>
         
         {loading ? (
           <p style={{ textAlign: 'center', color: 'white' }}>Loading...</p>

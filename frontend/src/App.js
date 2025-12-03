@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Meetups from './pages/Meetups';
 import MeetupDetail from './pages/MeetupDetail';
+import Profile from './pages/Profile';
 import './App.css';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/meetups" element={<Meetups />} />
           <Route path="/meetups/:id" element={<MeetupDetail />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>
     </Router>

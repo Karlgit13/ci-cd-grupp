@@ -6,6 +6,7 @@ function MeetupDetail() {
   const [meetup, setMeetup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
   const [message, setMessage] = useState('');
   const { id } = useParams();
   const user = getCurrentUser();
@@ -13,6 +14,7 @@ function MeetupDetail() {
 
   useEffect(() => {
     fetchMeetup();
+    checkRegistration();
   }, [id]);
 
   const fetchMeetup = async () => {
@@ -25,6 +27,20 @@ function MeetupDetail() {
       console.error('Error fetching meetup:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkRegistration = async () => {
+    try {
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+      const token = getAuthToken();
+      const response = await fetch(`${API_URL}/users/me/meetups`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const meetups = await response.json();
+      setIsRegistered(meetups.some(m => m.id === parseInt(id)));
+    } catch (error) {
+      console.error('Error checking registration:', error);
     }
   };
 
@@ -47,12 +63,48 @@ function MeetupDetail() {
 
       if (response.ok) {
         setMessage('Successfully registered!');
+        setIsRegistered(true);
         fetchMeetup();
       } else {
         setMessage(data.error || 'Registration failed');
       }
     } catch (error) {
       setMessage('Error registering for meetup');
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  const handleUnregister = async () => {
+    if (!window.confirm('Are you sure you want to unregister from this meetup?')) {
+      return;
+    }
+
+    setRegistering(true);
+    setMessage('');
+    
+    try {
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+      const token = getAuthToken();
+      
+      const response = await fetch(`${API_URL}/meetups/${id}/register`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage('Successfully unregistered!');
+        setIsRegistered(false);
+        fetchMeetup();
+      } else {
+        setMessage(data.error || 'Unregistration failed');
+      }
+    } catch (error) {
+      setMessage('Error unregistering from meetup');
     } finally {
       setRegistering(false);
     }
@@ -237,17 +289,32 @@ function MeetupDetail() {
           </div>
         </div>
 
-        <button 
-          onClick={handleRegister} 
-          disabled={registering || isFull}
-          style={{
-            ...styles.registerButton,
-            opacity: registering || isFull ? 0.5 : 1,
-            cursor: registering || isFull ? 'not-allowed' : 'pointer'
-          }}
-        >
-          {registering ? 'Registering...' : isFull ? 'Meetup Full' : 'Register for Meetup'}
-        </button>
+        {isRegistered ? (
+          <button 
+            onClick={handleUnregister} 
+            disabled={registering}
+            style={{
+              ...styles.registerButton,
+              background: '#e53e3e',
+              opacity: registering ? 0.5 : 1,
+              cursor: registering ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {registering ? 'Processing...' : 'Unregister from Meetup'}
+          </button>
+        ) : (
+          <button 
+            onClick={handleRegister} 
+            disabled={registering || isFull}
+            style={{
+              ...styles.registerButton,
+              opacity: registering || isFull ? 0.5 : 1,
+              cursor: registering || isFull ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {registering ? 'Registering...' : isFull ? 'Meetup Full' : 'Register for Meetup'}
+          </button>
+        )}
 
         {message && (
           <div style={{

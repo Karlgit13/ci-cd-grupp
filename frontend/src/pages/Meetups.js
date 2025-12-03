@@ -109,9 +109,9 @@ function Meetups() {
     title: {
       fontSize: '32px',
       fontWeight: 'bold',
-      color: 'white',
       marginBottom: '30px',
-      textAlign: 'center'
+      textAlign: 'center',
+      color: 'white'
     },
     searchContainer: {
       maxWidth: '600px',

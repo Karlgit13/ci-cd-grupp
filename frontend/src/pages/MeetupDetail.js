@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getCurrentUser, getAuthToken, logout } from '../services/api';
 
@@ -15,13 +15,7 @@ function MeetupDetail() {
   const user = getCurrentUser();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchMeetup();
-    checkRegistration();
-    fetchReviews();
-  }, [id]);
-
-  const fetchMeetup = async () => {
+  const fetchMeetup = useCallback(async () => {
     try {
       const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
       const response = await fetch(`${API_URL}/meetups/${id}`);
@@ -32,9 +26,9 @@ function MeetupDetail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  const checkRegistration = async () => {
+  const checkRegistration = useCallback(async () => {
     try {
       const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
       const token = getAuthToken();
@@ -46,7 +40,13 @@ function MeetupDetail() {
     } catch (error) {
       console.error('Error checking registration:', error);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchMeetup();
+    checkRegistration();
+    fetchReviews();
+  }, [id, fetchMeetup, checkRegistration, fetchReviews]);
 
   const handleRegister = async () => {
     setRegistering(true);
@@ -114,7 +114,7 @@ function MeetupDetail() {
     }
   };
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
       const response = await fetch(`${API_URL}/meetups/${id}/reviews`);
@@ -123,7 +123,7 @@ function MeetupDetail() {
     } catch (error) {
       console.error('Error fetching reviews:', error);
     }
-  };
+  }, [id]);
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();

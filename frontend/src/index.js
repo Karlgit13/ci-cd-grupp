@@ -4,6 +4,15 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+// Suppress ResizeObserver errors in development (benign warning from dev tools)
+const resizeObserverErr = window.console.error;
+window.console.error = (...args) => {
+  if (args[0]?.includes?.('ResizeObserver')) {
+    return;
+  }
+  resizeObserverErr(...args);
+};
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>

@@ -21,13 +21,13 @@ function Meetups() {
     try {
       setLoading(true);
       const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-      
+
       const params = new URLSearchParams();
       if (searchQuery) params.append('search', searchQuery);
       if (dateFilter) params.append('date', dateFilter);
       if (locationFilter) params.append('location', locationFilter);
       if (categoryFilter) params.append('category', categoryFilter);
-      
+
       const url = params.toString() ? `${API_URL}/meetups?${params}` : `${API_URL}/meetups`;
       const response = await fetch(url);
       const data = await response.json();
@@ -62,297 +62,226 @@ function Meetups() {
     navigate('/login');
   };
 
-  const styles = {
-    container: {
-      minHeight: '100vh',
-      padding: '20px',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-    },
-    navbar: {
-      background: 'white',
-      borderRadius: '16px',
-      padding: '20px 30px',
-      marginBottom: '30px',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      maxWidth: '1200px',
-      margin: '0 auto 30px'
-    },
-    logo: {
-      fontSize: '24px',
-      fontWeight: 'bold',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent'
-    },
-    userInfo: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '20px'
-    },
-    button: {
-      padding: '10px 20px',
-      fontSize: '14px',
-      fontWeight: '600',
-      color: 'white',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      border: 'none',
-      borderRadius: '8px',
-      cursor: 'pointer'
-    },
-    content: {
-      maxWidth: '1200px',
-      margin: '0 auto'
-    },
-    title: {
-      fontSize: '32px',
-      fontWeight: 'bold',
-      color: 'white',
-      marginBottom: '30px',
-      textAlign: 'center'
-    },
-    searchContainer: {
-      maxWidth: '600px',
-      margin: '0 auto 30px'
-    },
-    searchForm: {
-      display: 'flex',
-      gap: '12px'
-    },
-    searchInput: {
-      flex: 1,
-      padding: '14px 20px',
-      fontSize: '16px',
-      border: 'none',
-      borderRadius: '12px',
-      outline: 'none'
-    },
-    searchButton: {
-      padding: '14px 30px',
-      fontSize: '16px',
-      fontWeight: '600',
-      color: '#667eea',
-      background: 'white',
-      border: 'none',
-      borderRadius: '12px',
-      cursor: 'pointer'
-    },
-    filterToggle: {
-      padding: '10px 20px',
-      fontSize: '14px',
-      fontWeight: '600',
-      color: 'white',
-      background: 'rgba(255,255,255,0.2)',
-      border: '2px solid white',
-      borderRadius: '8px',
-      cursor: 'pointer',
-      marginBottom: '20px'
-    },
-    filtersPanel: {
-      background: 'white',
-      borderRadius: '12px',
-      padding: '20px',
-      marginBottom: '20px',
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-      gap: '16px'
-    },
-    filterInput: {
-      padding: '10px',
-      fontSize: '14px',
-      border: '2px solid #e2e8f0',
-      borderRadius: '8px'
-    },
-    grid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-      gap: '24px'
-    },
-    card: {
-      background: 'white',
-      borderRadius: '16px',
-      padding: '24px',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-      transition: 'transform 0.2s',
-      cursor: 'pointer'
-    },
-    cardTitle: {
-      fontSize: '20px',
-      fontWeight: 'bold',
-      marginBottom: '8px',
-      color: '#1a202c'
-    },
-    cardDate: {
-      fontSize: '14px',
-      color: '#667eea',
-      marginBottom: '12px'
-    },
-    cardDescription: {
-      fontSize: '14px',
-      color: '#718096',
-      marginBottom: '16px',
-      lineHeight: '1.5'
-    },
-    cardFooter: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingTop: '16px',
-      borderTop: '1px solid #e2e8f0'
-    },
-    category: {
-      fontSize: '12px',
-      padding: '4px 12px',
-      background: '#f7fafc',
-      borderRadius: '12px',
-      color: '#4a5568'
-    },
-    capacity: {
-      fontSize: '14px',
-      color: '#718096'
-    }
-  };
-
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
-
   return (
-    <div style={styles.container}>
-      <div style={styles.navbar}>
-        <Link to="/meetups" style={{ textDecoration: 'none' }}>
-          <div style={styles.logo}>Meetup App</div>
+    <div className="container" style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+      <nav className="glass" style={{
+        padding: '20px 30px',
+        borderRadius: '16px',
+        marginBottom: '40px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <Link to="/" style={{ textDecoration: 'none' }}>
+          <div style={{
+            fontSize: '28px',
+            fontWeight: 'bold',
+            background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
+            Meetup App
+          </div>
         </Link>
-        <div style={styles.userInfo}>
-          <Link to="/create-meetup" style={{ ...styles.button, textDecoration: 'none', display: 'inline-block' }}>
-            Create Meetup
-          </Link>
-          <Link to="/profile" style={{ color: '#1a202c', textDecoration: 'none', fontWeight: '600', fontSize: '14px' }}>
-            Profile
-          </Link>
-          <span style={{ fontWeight: '600', color: '#1a202c' }}>Hi, {user.username}!</span>
-          <button onClick={handleLogout} style={styles.button}>Logout</button>
-        </div>
-      </div>
-
-      <div style={styles.content}>
-        <h1 style={styles.title}>Upcoming Meetups</h1>
-        
-        <div style={styles.searchContainer}>
-          <form onSubmit={handleSearch} style={styles.searchForm}>
-            <input
-              type="text"
-              placeholder="Search meetups..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={styles.searchInput}
-            />
-            <button type="submit" style={styles.searchButton}>
-              Search
-            </button>
-          </form>
-
-          <button 
-            onClick={() => setShowFilters(!showFilters)} 
-            style={styles.filterToggle}
-          >
-            {showFilters ? 'Hide Filters' : 'Show Filters'}
-          </button>
-
-          {showFilters && (
-            <div style={styles.filtersPanel}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '600', color: '#4a5568' }}>
-                  Date
-                </label>
-                <input
-                  type="date"
-                  value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
-                  style={styles.filterInput}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '600', color: '#4a5568' }}>
-                  Location
-                </label>
-                <input
-                  type="text"
-                  placeholder="Filter by location"
-                  value={locationFilter}
-                  onChange={(e) => setLocationFilter(e.target.value)}
-                  style={styles.filterInput}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '600', color: '#4a5568' }}>
-                  Category
-                </label>
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  style={styles.filterInput}
-                >
-                  <option value="">All Categories</option>
-                  <option value="tech">Tech</option>
-                  <option value="business">Business</option>
-                  <option value="health">Health</option>
-                  <option value="sports">Sports</option>
-                  <option value="art">Art</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                <button 
-                  onClick={handleClearFilters}
-                  style={{ ...styles.filterInput, cursor: 'pointer', background: '#e53e3e', color: 'white', border: 'none', fontWeight: '600' }}
-                >
-                  Clear Filters
-                </button>
-              </div>
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          {user ? (
+            <>
+              <Link to="/create-meetup" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block' }}>
+                Create Meetup
+              </Link>
+              <Link to="/profile" style={{ color: 'white', textDecoration: 'none', fontWeight: '600' }}>
+                Profile
+              </Link>
+              <span style={{ color: 'var(--text-secondary)' }}>Hi, {user.username}</span>
+              <button
+                onClick={handleLogout}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--text-secondary)',
+                  color: 'var(--text-secondary)',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" style={{ color: 'white', textDecoration: 'none', fontWeight: '600' }}>
+                Login
+              </Link>
+              <Link to="/register" className="btn-primary" style={{ textDecoration: 'none' }}>
+                Get Started
+              </Link>
+            </>
           )}
         </div>
-        
-        {loading ? (
-          <p style={{ textAlign: 'center', color: 'white' }}>Loading...</p>
-        ) : meetups.length === 0 ? (
-          <p style={{ textAlign: 'center', color: 'white' }}>No meetups found</p>
-        ) : (
-          <div style={styles.grid}>
-            {meetups.map(meetup => (
-              <Link 
-                key={meetup.id} 
-                to={`/meetups/${meetup.id}`}
-                style={{ textDecoration: 'none' }}
+      </nav>
+
+      <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+        <h1 style={{
+          fontSize: '48px',
+          fontWeight: '800',
+          marginBottom: '20px',
+          background: 'linear-gradient(to right, #fff, #94a3b8)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent'
+        }}>
+          Discover Amazing Meetups
+        </h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '18px', maxWidth: '600px', margin: '0 auto' }}>
+          Join a community of like-minded people. Find events that match your interests.
+        </p>
+      </div>
+
+      <div style={{ maxWidth: '800px', margin: '0 auto 50px' }}>
+        <div className="glass" style={{ padding: '10px', borderRadius: '16px', display: 'flex', gap: '10px' }}>
+          <form onSubmit={handleSearch} style={{ flex: 1, display: 'flex' }}>
+            <input
+              type="text"
+              placeholder="Search for meetups..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="input-field"
+              style={{ border: 'none', background: 'transparent' }}
+            />
+          </form>
+          <button
+            type="button"
+            onClick={() => setShowFilters(!showFilters)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              padding: '0 20px',
+              fontWeight: '600'
+            }}
+          >
+            Filters
+          </button>
+          <button onClick={handleSearch} className="btn-primary" style={{ borderRadius: '12px' }}>
+            Search
+          </button>
+        </div>
+
+        {showFilters && (
+          <div className="glass" style={{ marginTop: '20px', padding: '20px', borderRadius: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-secondary)' }}>Date</label>
+              <input
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="input-field"
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-secondary)' }}>Location</label>
+              <input
+                type="text"
+                placeholder="City or venue"
+                value={locationFilter}
+                onChange={(e) => setLocationFilter(e.target.value)}
+                className="input-field"
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-secondary)' }}>Category</label>
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="input-field"
               >
-                <div style={styles.card}>
-                  <h3 style={styles.cardTitle}>{meetup.title}</h3>
-                  <p style={styles.cardDate}>
-                    📅 {new Date(meetup.date).toLocaleDateString()} at {new Date(meetup.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                  <p style={styles.cardDescription}>
-                    {meetup.description?.substring(0, 100)}
-                    {meetup.description?.length > 100 ? '...' : ''}
-                  </p>
-                  <p style={{ fontSize: '14px', color: '#718096', marginBottom: '8px' }}>
-                    📍 {meetup.location}
-                  </p>
-                  <div style={styles.cardFooter}>
-                    <span style={styles.category}>{meetup.category}</span>
-                    <span style={styles.capacity}>
-                      {meetup.registered_count}/{meetup.capacity} joined
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
+                <option value="">All Categories</option>
+                <option value="tech">Tech</option>
+                <option value="business">Business</option>
+                <option value="health">Health</option>
+                <option value="sports">Sports</option>
+                <option value="art">Art</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
           </div>
         )}
       </div>
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '3px solid rgba(255,255,255,0.3)', borderRadius: '50%', borderTopColor: 'var(--primary)', animation: 'spin 1s ease-in-out infinite' }}></div>
+        </div>
+      ) : meetups.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary)' }}>
+          <h2>No meetups found</h2>
+          <p>Try adjusting your search criteria</p>
+        </div>
+      ) : (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+          gap: '30px'
+        }}>
+          {meetups.map(meetup => (
+            <div key={meetup.id} className="glass" style={{
+              borderRadius: '20px',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              transition: 'transform 0.3s ease',
+              cursor: 'pointer'
+            }}
+              onClick={() => navigate(user ? `/meetups/${meetup.id}` : '/login')}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              <div style={{ height: '140px', background: `linear-gradient(135deg, ${['#6366f1', '#ec4899', '#8b5cf6', '#10b981'][meetup.id % 4]} 0%, #1e293b 100%)`, position: 'relative' }}>
+                <span style={{
+                  position: 'absolute',
+                  top: '15px',
+                  right: '15px',
+                  background: 'rgba(0,0,0,0.5)',
+                  backdropFilter: 'blur(4px)',
+                  padding: '4px 12px',
+                  borderRadius: '20px',
+                  fontSize: '12px',
+                  fontWeight: '600'
+                }}>
+                  {meetup.category}
+                </span>
+              </div>
+
+              <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ marginBottom: 'auto' }}>
+                  <p style={{ color: 'var(--secondary)', fontSize: '13px', fontWeight: 'bold', marginBottom: '8px' }}>
+                    {new Date(meetup.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                  <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '12px', lineHeight: '1.4' }}>
+                    {meetup.title}
+                  </h3>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.6', marginBottom: '20px' }}>
+                    {meetup.description?.substring(0, 100)}
+                    {meetup.description?.length > 100 ? '...' : ''}
+                  </p>
+                </div>
+
+                <div style={{ paddingTop: '20px', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                    <span>📍</span> {meetup.location}
+                  </div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                    {meetup.registered_count}/{meetup.capacity} going
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <style>
+        {`@keyframes spin { to { transform: rotate(360deg); } }`}
+      </style>
     </div>
   );
 }

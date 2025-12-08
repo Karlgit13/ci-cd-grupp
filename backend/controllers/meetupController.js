@@ -3,16 +3,16 @@ const pool = require('../config/db');
 const getAllMeetups = async (req, res) => {
   try {
     const { search, date, location, category } = req.query;
-    
+
     let query = `SELECT m.*, u.username as host_name,
        (SELECT COUNT(*) FROM registrations WHERE meetup_id = m.id) as registered_count
        FROM meetups m
        JOIN users u ON m.host_id = u.id
        WHERE m.date >= NOW()`;
-    
+
     const params = [];
     let paramCount = 0;
-    
+
     if (search) {
       paramCount++;
       query += ` AND (m.title ILIKE $${paramCount} OR m.description ILIKE $${paramCount})`;
@@ -36,9 +36,9 @@ const getAllMeetups = async (req, res) => {
       query += ` AND m.category = $${paramCount}`;
       params.push(category);
     }
-    
+
     query += ` ORDER BY m.date ASC`;
-    
+
     const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (error) {
@@ -150,11 +150,63 @@ const unregisterFromMeetup = async (req, res) => {
   }
 };
 
+const addReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating, comment } = req.body;
+    const userId = req.user.id;
+
+    // Check if user attended
+    const registration = await pool.query(
+      'SELECT * FROM registrations WHERE user_id = $1 AND meetup_id = $2',
+      [userId, id]
+    );
+
+    if (registration.rows.length === 0) {
+      return res.status(403).json({ error: 'You can only review meetups you attended' });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO reviews (user_id, meetup_id, rating, comment)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (user_id, meetup_id) 
+       DO UPDATE SET rating = $3, comment = $4, created_at = CURRENT_TIMESTAMP
+       RETURNING *`,
+      [userId, id, rating, comment]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+const getReviews = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      `SELECT r.*, u.username
+       FROM reviews r
+       JOIN users u ON r.user_id = u.id
+       WHERE r.meetup_id = $1
+       ORDER BY r.created_at DESC`,
+      [id]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 module.exports = {
   getAllMeetups,
   getMeetupById,
   createMeetup,
   registerForMeetup,
-  unregisterFromMeetup
+  unregisterFromMeetup,
+  addReview,
+  getReviews
 };
 

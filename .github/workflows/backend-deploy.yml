@@ -29,7 +29,7 @@ jobs:
       - name: Build and push Docker image to ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: karlgt13-lambda
+          ECR_REPOSITORY: karlgit13-lambda
           IMAGE_TAG: latest
         run: |
           cd backend
@@ -39,6 +39,6 @@ jobs:
       - name: Update Lambda function
         run: |
           aws lambda update-function-code \
-            --function-name karlgt13-meetup-api \
-            --image-uri ${{ steps.login-ecr.outputs.registry }}/karlgt13-lambda:latest
+            --function-name karlgit13-meetup-api \
+            --image-uri ${{ steps.login-ecr.outputs.registry }}/karlgit13-lambda:latest
 

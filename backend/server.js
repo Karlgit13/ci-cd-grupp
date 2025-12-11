@@ -25,15 +25,22 @@ app.use((req, res, next) => {
 app.use(cors());
 app.use(express.json());
 
+
 // Logging
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
   next();
+=======
+dev
+// Global health
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
 });
 
 app.get('/', (req, res) => {
   res.json({ message: 'API running' });
 });
+
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', platform: 'aws-lambda' });
@@ -44,9 +51,42 @@ app.use('/api/auth', authRoutes);
 app.use('/api/meetups', meetupRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/meetups', reviewRoutes);
+=======
+start();
+=======
+// --- HEALTH CHECKS (Must be top level) ---
+console.log('Registering health routes...');
+
+app.get("/health", (req, res) => {
+  console.log('Health check called!');
+  res.json({ status: "ok", service: "backend" });
+});
+
+app.get("/auth/health", (req, res) => {
+  console.log('Auth check called!');
+  res.json({ status: "ok", service: "backend-auth" });
+});
+// -----------------------------------------
+
+app.get('/', (req, res) => {
+  res.send('API is running');
+});
+
+// Mounted routes
+app.use('/auth', authRoutes);
+app.use('/meetups', meetupRoutes);
+app.use('/users', userRoutes);
+app.use('/meetups', reviewRoutes);
+
 
 app.use(errorHandler);
 
 app.listen(PORT, () => {
+
   console.log(`Server started on port ${PORT}`);
 });
+=======
+  console.log(`Server running on port ${PORT}`);
+});
+
+

@@ -6,12 +6,12 @@ export const register = async (username, email, password) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, email, password })
   });
-  
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || 'Registration failed');
   }
-  
+
   return response.json();
 };
 
@@ -21,12 +21,12 @@ export const login = async (email, password) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
   });
-  
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || 'Login failed');
   }
-  
+
   return response.json();
 };
 
@@ -59,4 +59,3 @@ export const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
 };
-

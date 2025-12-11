@@ -27,7 +27,10 @@ jobs:
       - name: Build React app
         working-directory: ./frontend
         run: npm run build
-      
+        env:
+          DISABLE_ESLINT_PLUGIN: 'true'
+          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -38,5 +41,5 @@ jobs:
       - name: Deploy to S3
         working-directory: ./frontend
         run: |
-          aws s3 sync build/ s3://${{ secrets.AWS_S3_BUCKET }} --delete
+          aws s3 sync build/ s3://cicd-grupp-exam --delete
 

@@ -13,6 +13,7 @@ function App() {
   return (
     <Router>
       <div className="App">
+        {/* Render Trigger: pnpm redeploy */}
         <Routes>
           <Route path="/" element={<Meetups />} />
           <Route path="/login" element={<Login />} />

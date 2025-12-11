@@ -1,4 +1,6 @@
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL ||
+  process.env.REACT_APP_API_URL ||
+  'http://localhost:3000';
 
 export const register = async (username, email, password) => {
   const response = await fetch(`${API_URL}/auth/register`, {
@@ -8,8 +10,8 @@ export const register = async (username, email, password) => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Registration failed');
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Registration failed');
   }
 
   return response.json();
@@ -23,8 +25,8 @@ export const login = async (email, password) => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Login failed');
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Login failed');
   }
 
   return response.json();

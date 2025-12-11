@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getCurrentUser, logout } from '../services/api';
+import { getCurrentUser, logout, getAllMeetups } from '../services/api';
 
 function Meetups() {
   const [meetups, setMeetups] = useState([]);
@@ -20,17 +20,12 @@ function Meetups() {
   const fetchMeetups = async () => {
     try {
       setLoading(true);
-      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-
-      const params = new URLSearchParams();
-      if (searchQuery) params.append('search', searchQuery);
-      if (dateFilter) params.append('date', dateFilter);
-      if (locationFilter) params.append('location', locationFilter);
-      if (categoryFilter) params.append('category', categoryFilter);
-
-      const url = params.toString() ? `${API_URL}/meetups?${params}` : `${API_URL}/meetups`;
-      const response = await fetch(url);
-      const data = await response.json();
+      const data = await getAllMeetups({
+        search: searchQuery,
+        date: dateFilter,
+        location: locationFilter,
+        category: categoryFilter
+      });
       setMeetups(data);
     } catch (error) {
       console.error('Error fetching meetups:', error);

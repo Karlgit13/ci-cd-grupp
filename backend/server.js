@@ -41,15 +41,14 @@ app.use('/users', userRoutes);
 app.use(errorHandler);
 
 async function start() {
-  try {
-    await db.init();
-    app.listen(PORT, () => {
-      console.log(`API running on port ${PORT}`);
-    });
-  } catch (err) {
-    console.error('Failed to start server:', err);
-    process.exit(1);
-  }
+  // Try to initialize database, but don't crash if it fails
+  await db.init();
+
+  app.listen(PORT, () => {
+    console.log(`\n🚀 API running on port ${PORT}`);
+    console.log(`   Health: http://localhost:${PORT}/health`);
+    console.log(`   Auth Health: http://localhost:${PORT}/auth/health\n`);
+  });
 }
 
 start();

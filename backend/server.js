@@ -10,51 +10,30 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 1. ABSOLUTE FIRST: MANUAL CORS HEADERS
-// This ensures headers are present even if later middleware fails
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-
-  // Handle preflight immediately and stop processing
-  if (req.method === 'OPTIONS') {
-    return res.status(200).send();
-  }
-
-  next();
-});
-
-// 2. Request Logging
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
-  next();
-});
-
-// 3. Json Body Parser
+// Standard CORS for Render Web Service
+app.use(cors());
 app.use(express.json());
 
-// 4. Routes
+// Health check route matching your requirement
+app.get('/auth/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
 app.get('/', (req, res) => {
-  res.json({ message: 'API running', timestamp: new Date().toISOString() });
+  res.json({ message: 'Meeting App Backend Running' });
 });
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', env: process.env.NODE_ENV });
-});
+// Mount routes without /api prefix to match simplistic frontend config
+// Frontend: `${API_URL}/auth/register` -> POST /auth/register
+app.use('/auth', authRoutes);
+app.use('/meetups', meetupRoutes);
+app.use('/users', userRoutes);
+// Note: reviewRoutes was mounted on /api/meetups usually. 
+// If it handles /:id/reviews, we mount it on /meetups too? 
+// Let's keep it consistent:
+app.use('/meetups', reviewRoutes);
 
-app.use('/api/auth', authRoutes);
-app.use('/api/meetups', meetupRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/meetups', reviewRoutes);
-
-// 5. Error Handler
-app.use((err, req, res, next) => {
-  console.error('Unhandled Error:', err);
-  // Ensure CORS headers on error too (though middleware above should cover it)
-  res.header('Access-Control-Allow-Origin', '*');
-  res.status(500).json({ error: 'Internal Server Error', details: err.message });
-});
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);

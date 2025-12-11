@@ -39,6 +39,6 @@ jobs:
       - name: Update Lambda function
         run: |
           aws lambda update-function-code \
-            --function-name karlgt13-meetup-api \
+            --function-name karlgit13-meetup-api \
             --image-uri ${{ steps.login-ecr.outputs.registry }}/karlgt13-lambda:latest
 

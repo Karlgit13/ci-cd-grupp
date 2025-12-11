@@ -13,16 +13,25 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// HEALTHCHECK
-app.get("/auth/health", (req, res) => {
-  res.json({ status: "ok" });
+// --- HEALTH CHECKS (Must be top level) ---
+console.log('Registering health routes...');
+
+app.get("/health", (req, res) => {
+  console.log('Health check called!');
+  res.json({ status: "ok", service: "backend" });
 });
+
+app.get("/auth/health", (req, res) => {
+  console.log('Auth check called!');
+  res.json({ status: "ok", service: "backend-auth" });
+});
+// -----------------------------------------
 
 app.get('/', (req, res) => {
   res.send('API is running');
 });
 
-// Mounted routes matching frontend expectations
+// Mounted routes
 app.use('/auth', authRoutes);
 app.use('/meetups', meetupRoutes);
 app.use('/users', userRoutes);

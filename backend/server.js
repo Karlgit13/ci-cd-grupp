@@ -11,30 +11,19 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors({
-  origin: [
-    'https://ci-cd-frontend-karl.onrender.com', // Render Frontend
-    'http://localhost:3000', // Local development
-    'http://cicd-grupp-exam.s3-website.eu-north-1.amazonaws.com' // S3 Bucket Website
-  ],
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  fix/cors-preflight-handling
-  allowedHeaders: ['Content-Type', 'Authorization']
-=======
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  preflightContinue: false,
   optionsSuccessStatus: 204
-  main
 }));
 app.use(express.json());
+
+// Handle preflight requests
+app.options('*', cors());
 
 app.get('/', (req, res) => {
   res.json({ message: 'API running' });
 });
-
-// Handle preflight requests for all routes
-app.options('*', cors());
-
 
 app.use('/api/auth', authRoutes);
 app.use('/api/meetups', meetupRoutes);
@@ -46,4 +35,3 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
-

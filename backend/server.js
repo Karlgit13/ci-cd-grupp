@@ -14,6 +14,21 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+dev
+// HEALTHCHECK
+app.get("/auth/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+
+app.get('/', (req, res) => {
+  res.send('API is running');
+});
+
+// Mounted routes matching frontend expectations
+app.use('/auth', authRoutes);
+app.use('/meetups', meetupRoutes);
+app.use('/users', userRoutes);
+=======
 // Health check route matching your requirement
 app.get('/auth/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -31,10 +46,11 @@ app.use('/users', userRoutes);
 // Note: reviewRoutes was mounted on /api/meetups usually. 
 // If it handles /:id/reviews, we mount it on /meetups too? 
 // Let's keep it consistent:
+main
 app.use('/meetups', reviewRoutes);
 
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

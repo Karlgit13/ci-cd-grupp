@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getCurrentUser, getAuthToken, logout } from '../services/api';
+import {
+  getCurrentUser,
+  getAuthToken,
+  logout,
+  getMeetupById,
+  registerForMeetup,
+  unregisterFromMeetup,
+  getUserMeetups,
+  getReviews,
+  addReview
+} from '../services/api';
 
 function MeetupDetail() {
   const [meetup, setMeetup] = useState(null);
@@ -18,14 +28,12 @@ function MeetupDetail() {
   useEffect(() => {
     fetchMeetup();
     checkRegistration();
-    fetchReviews();
+    fetchReviewsData();
   }, [id]);
 
   const fetchMeetup = async () => {
     try {
-      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-      const response = await fetch(`${API_URL}/meetups/${id}`);
-      const data = await response.json();
+      const data = await getMeetupById(id);
       setMeetup(data);
     } catch (error) {
       console.error('Error fetching meetup:', error);
@@ -36,12 +44,7 @@ function MeetupDetail() {
 
   const checkRegistration = async () => {
     try {
-      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-      const token = getAuthToken();
-      const response = await fetch(`${API_URL}/users/me/meetups`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const meetups = await response.json();
+      const meetups = await getUserMeetups();
       setIsRegistered(meetups.some(m => m.id === parseInt(id)));
     } catch (error) {
       console.error('Error checking registration:', error);
@@ -51,29 +54,14 @@ function MeetupDetail() {
   const handleRegister = async () => {
     setRegistering(true);
     setMessage('');
-    
+
     try {
-      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-      const token = getAuthToken();
-      
-      const response = await fetch(`${API_URL}/meetups/${id}/register`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage('Successfully registered!');
-        setIsRegistered(true);
-        fetchMeetup();
-      } else {
-        setMessage(data.error || 'Registration failed');
-      }
+      await registerForMeetup(id);
+      setMessage('Successfully registered!');
+      setIsRegistered(true);
+      fetchMeetup();
     } catch (error) {
-      setMessage('Error registering for meetup');
+      setMessage(error.message || 'Error registering for meetup');
     } finally {
       setRegistering(false);
     }
@@ -86,39 +74,22 @@ function MeetupDetail() {
 
     setRegistering(true);
     setMessage('');
-    
+
     try {
-      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-      const token = getAuthToken();
-      
-      const response = await fetch(`${API_URL}/meetups/${id}/register`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage('Successfully unregistered!');
-        setIsRegistered(false);
-        fetchMeetup();
-      } else {
-        setMessage(data.error || 'Unregistration failed');
-      }
+      await unregisterFromMeetup(id);
+      setMessage('Successfully unregistered!');
+      setIsRegistered(false);
+      fetchMeetup();
     } catch (error) {
-      setMessage('Error unregistering from meetup');
+      setMessage(error.message || 'Error unregistering from meetup');
     } finally {
       setRegistering(false);
     }
   };
 
-  const fetchReviews = async () => {
+  const fetchReviewsData = async () => {
     try {
-      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-      const response = await fetch(`${API_URL}/meetups/${id}/reviews`);
-      const data = await response.json();
+      const data = await getReviews(id);
       setReviews(data);
     } catch (error) {
       console.error('Error fetching reviews:', error);
@@ -130,30 +101,13 @@ function MeetupDetail() {
     setMessage('');
 
     try {
-      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-      const token = getAuthToken();
-      
-      const response = await fetch(`${API_URL}/meetups/${id}/reviews`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ rating, comment })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage('Review submitted successfully!');
-        setComment('');
-        setRating(5);
-        fetchReviews();
-      } else {
-        setMessage(data.error || 'Failed to submit review');
-      }
+      await addReview(id, { rating, comment });
+      setMessage('Review submitted successfully!');
+      setComment('');
+      setRating(5);
+      fetchReviewsData();
     } catch (error) {
-      setMessage('Error submitting review');
+      setMessage(error.message || 'Failed to submit review');
     }
   };
 
@@ -333,9 +287,9 @@ function MeetupDetail() {
 
       <div style={styles.content}>
         <Link to="/meetups" style={styles.backLink}>← Back to Meetups</Link>
-        
+
         <h1 style={styles.title}>{meetup.title}</h1>
-        
+
         <div style={styles.meta}>
           <span>📅 {new Date(meetup.date).toLocaleDateString()} at {new Date(meetup.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
           <span>📍 {meetup.location}</span>
@@ -359,8 +313,8 @@ function MeetupDetail() {
         </div>
 
         {isRegistered ? (
-          <button 
-            onClick={handleUnregister} 
+          <button
+            onClick={handleUnregister}
             disabled={registering}
             style={{
               ...styles.registerButton,
@@ -372,8 +326,8 @@ function MeetupDetail() {
             {registering ? 'Processing...' : 'Unregister from Meetup'}
           </button>
         ) : (
-          <button 
-            onClick={handleRegister} 
+          <button
+            onClick={handleRegister}
             disabled={registering || isFull}
             style={{
               ...styles.registerButton,
@@ -410,8 +364,8 @@ function MeetupDetail() {
                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#4a5568' }}>
                     Rating
                   </label>
-                  <select 
-                    value={rating} 
+                  <select
+                    value={rating}
                     onChange={(e) => setRating(parseInt(e.target.value))}
                     style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #e2e8f0' }}
                   >

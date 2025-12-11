@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { getCurrentUser, getAuthToken, logout } from '../services/api';
+import { getCurrentUser, logout, createMeetup } from '../services/api';
 
 function CreateMeetup() {
   const [title, setTitle] = useState('');
@@ -21,36 +21,20 @@ function CreateMeetup() {
     setLoading(true);
 
     try {
-      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-      const token = getAuthToken();
-      
       const datetime = `${date}T${time}`;
-      
-      const response = await fetch(`${API_URL}/meetups`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          title,
-          description,
-          date: datetime,
-          location,
-          category,
-          capacity: parseInt(capacity)
-        })
+
+      await createMeetup({
+        title,
+        description,
+        date: datetime,
+        location,
+        category,
+        capacity: parseInt(capacity)
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        navigate('/meetups');
-      } else {
-        setError(data.error || 'Failed to create meetup');
-      }
+      navigate('/meetups');
     } catch (err) {
-      setError('Error creating meetup');
+      setError(err.message || 'Error creating meetup');
     } finally {
       setLoading(false);
     }
@@ -287,8 +271,8 @@ function CreateMeetup() {
             </div>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             style={{
               ...styles.submitButton,

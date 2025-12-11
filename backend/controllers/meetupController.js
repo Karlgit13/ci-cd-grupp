@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+const db = require('../db');
 
 const getAllMeetups = async (req, res) => {
   try {
@@ -39,7 +39,7 @@ const getAllMeetups = async (req, res) => {
 
     query += ` ORDER BY m.date ASC`;
 
-    const result = await pool.query(query, params);
+    const result = await db.query(query, params);
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
@@ -49,7 +49,7 @@ const getAllMeetups = async (req, res) => {
 const getMeetupById = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query(
+    const result = await db.query(
       `SELECT m.*, u.username as host_name,
        (SELECT COUNT(*) FROM registrations WHERE meetup_id = m.id) as registered_count
        FROM meetups m
@@ -73,7 +73,7 @@ const createMeetup = async (req, res) => {
     const { title, description, date, location, category, capacity } = req.body;
     const hostId = req.user.id;
 
-    const result = await pool.query(
+    const result = await db.query(
       `INSERT INTO meetups (title, description, date, location, category, capacity, host_id)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
@@ -91,7 +91,7 @@ const registerForMeetup = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
 
-    const meetup = await pool.query(
+    const meetup = await db.query(
       `SELECT m.*, (SELECT COUNT(*) FROM registrations WHERE meetup_id = m.id) as registered_count
        FROM meetups m WHERE m.id = $1`,
       [id]
@@ -105,7 +105,7 @@ const registerForMeetup = async (req, res) => {
       return res.status(400).json({ error: 'Meetup is full' });
     }
 
-    const existing = await pool.query(
+    const existing = await db.query(
       'SELECT * FROM registrations WHERE user_id = $1 AND meetup_id = $2',
       [userId, id]
     );
@@ -114,7 +114,7 @@ const registerForMeetup = async (req, res) => {
       return res.status(400).json({ error: 'Already registered' });
     }
 
-    await pool.query(
+    await db.query(
       'INSERT INTO registrations (user_id, meetup_id) VALUES ($1, $2)',
       [userId, id]
     );
@@ -130,7 +130,7 @@ const unregisterFromMeetup = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
 
-    const registration = await pool.query(
+    const registration = await db.query(
       'SELECT * FROM registrations WHERE user_id = $1 AND meetup_id = $2',
       [userId, id]
     );
@@ -139,7 +139,7 @@ const unregisterFromMeetup = async (req, res) => {
       return res.status(404).json({ error: 'Registration not found' });
     }
 
-    await pool.query(
+    await db.query(
       'DELETE FROM registrations WHERE user_id = $1 AND meetup_id = $2',
       [userId, id]
     );
@@ -157,7 +157,7 @@ const addReview = async (req, res) => {
     const userId = req.user.id;
 
     // Check if user attended
-    const registration = await pool.query(
+    const registration = await db.query(
       'SELECT * FROM registrations WHERE user_id = $1 AND meetup_id = $2',
       [userId, id]
     );
@@ -166,7 +166,7 @@ const addReview = async (req, res) => {
       return res.status(403).json({ error: 'You can only review meetups you attended' });
     }
 
-    const result = await pool.query(
+    const result = await db.query(
       `INSERT INTO reviews (user_id, meetup_id, rating, comment)
        VALUES ($1, $2, $3, $4)
        ON CONFLICT (user_id, meetup_id) 
@@ -185,7 +185,7 @@ const getReviews = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await pool.query(
+    const result = await db.query(
       `SELECT r.*, u.username
        FROM reviews r
        JOIN users u ON r.user_id = u.id

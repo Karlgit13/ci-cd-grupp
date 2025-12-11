@@ -35,6 +35,7 @@ app.get('/', (req, res) => {
 
 // Mount routes WITHOUT /api prefix
 app.use('/auth', authRoutes);
+app.use('/meetups', reviewRoutes); // Mount reviews at /meetups/:id/reviews
 app.use('/meetups', meetupRoutes);
 app.use('/users', userRoutes);
 

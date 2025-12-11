@@ -1,56 +1,35 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const authRoutes = require('./routes/auth');
-const meetupRoutes = require('./routes/meetups');
-const userRoutes = require('./routes/users');
-const reviewRoutes = require('./routes/reviews');
-const errorHandler = require('./middleware/errorHandler');
+const express = require("express");
+const cors = require("cors");
+const db = require("./db");
+const authRouter = require("./routes/auth");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Standard CORS for Render Web Service
 app.use(cors());
 app.use(express.json());
 
-dev
-// HEALTHCHECK
-app.get("/auth/health", (req, res) => {
+// Global health
+app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-app.get('/', (req, res) => {
-  res.send('API is running');
-});
+// Auth-routes
+app.use("/auth", authRouter);
 
-// Mounted routes matching frontend expectations
-app.use('/auth', authRoutes);
-app.use('/meetups', meetupRoutes);
-app.use('/users', userRoutes);
-=======
-// Health check route matching your requirement
-app.get('/auth/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
+const port = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-  res.json({ message: 'Meeting App Backend Running' });
-});
+async function start() {
+  try {
+    await db.init();
+    app.listen(port, () => {
+      console.log(`API running on port ${port}`);
+    });
+  } catch (err) {
+    console.error("Failed to start server:", err);
+    // Vi vill inte döda processen direkt i Render om DB failar tillfälligt, men 
+    // här följer jag instruktionen. Render startar om containern vid exit(1).
+    process.exit(1);
+  }
+}
 
-// Mount routes without /api prefix to match simplistic frontend config
-// Frontend: `${API_URL}/auth/register` -> POST /auth/register
-app.use('/auth', authRoutes);
-app.use('/meetups', meetupRoutes);
-app.use('/users', userRoutes);
-// Note: reviewRoutes was mounted on /api/meetups usually. 
-// If it handles /:id/reviews, we mount it on /meetups too? 
-// Let's keep it consistent:
-main
-app.use('/meetups', reviewRoutes);
-
-app.use(errorHandler);
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+start();

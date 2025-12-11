@@ -13,18 +13,23 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.json({ message: 'API running' });
+// HEALTHCHECK
+app.get("/auth/health", (req, res) => {
+  res.json({ status: "ok" });
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/api/meetups', meetupRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/meetups', reviewRoutes);
+app.get('/', (req, res) => {
+  res.send('API is running');
+});
+
+// Mounted routes matching frontend expectations
+app.use('/auth', authRoutes);
+app.use('/meetups', meetupRoutes);
+app.use('/users', userRoutes);
+app.use('/meetups', reviewRoutes);
 
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
-

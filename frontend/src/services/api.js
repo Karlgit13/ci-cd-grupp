@@ -51,6 +51,26 @@ const authFetch = async (endpoint, options = {}) => {
   return response;
 };
 
+// Helper for optional authentication (sends token if available)
+const optionalAuthFetch = async (endpoint, options = {}) => {
+  const token = getAuthToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers
+  });
+
+  return response;
+};
+
 export const register = async (username, email, password) => {
   const response = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
@@ -119,14 +139,14 @@ export const getAllMeetups = async (filters = {}) => {
   if (filters.location) params.append('location', filters.location);
   if (filters.category) params.append('category', filters.category);
 
-  const url = params.toString() ? `${API_URL}/meetups?${params}` : `${API_URL}/meetups`;
-  const response = await fetch(url);
+  const url = params.toString() ? `/meetups?${params}` : `/meetups`;
+  const response = await optionalAuthFetch(url); // Updated to send auth if available
   if (!response.ok) throw new Error('Failed to fetch meetups');
   return response.json();
 };
 
 export const getMeetupById = async (id) => {
-  const response = await fetch(`${API_URL}/meetups/${id}`);
+  const response = await optionalAuthFetch(`/meetups/${id}`); // Updated to send auth
   if (!response.ok) throw new Error('Failed to fetch meetup');
   return response.json();
 };

@@ -1,50 +1,45 @@
-name: Frontend CI/CD
+name: Build and deploy frontend to S3
 
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'frontend/**'
   pull_request:
     branches: [ main ]
-    paths:
-      - 'frontend/**'
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          node-version: 18
 
-      - name: Install Dependencies
+      - name: Install deps (frontend)
         working-directory: ./frontend
         run: npm ci
 
-      - name: Build
+      - name: Build frontend
         working-directory: ./frontend
         run: npm run build
         env:
-          # This should be the URL of your Render backend
-          # In a real scenario, this might also be a secret: REACT_APP_API_URL
-          # For this school project, we assume it's set in repository secrets.
           REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
-          CI: false # Prevent warnings from failing the build
+          CI: false
+
+      - name: List build output (debug)
+        run: ls -R ./frontend/build
 
       - name: Deploy to S3
-        if: github.event_name == 'push'
-        uses: jakejarvis/s3-sync-action@master
+        uses: jakejarvis/s3-sync-action@v0.5.1
         with:
           args: --delete
         env:
           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }} # e.g. eu-north-1
+          AWS_REGION: ${{ secrets.AWS_REGION }}
           SOURCE_DIR: 'frontend/build'

@@ -42,6 +42,10 @@ const getAllMeetups = async (req, res) => {
     const result = await db.query(query, params);
     res.json(result.rows);
   } catch (error) {
+    if (error.code === 'ECONNREFUSED' || error.message.includes('password') || error.message.includes('getaddrinfo')) {
+      return res.status(500).json({ error: "Database connection failed", code: "DB_CONNECTION_FAILED" });
+    }
+    console.error('Error fetching meetups:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -64,6 +68,7 @@ const getMeetupById = async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (error) {
+    console.error('Error fetching meetup:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -82,6 +87,7 @@ const createMeetup = async (req, res) => {
 
     res.status(201).json(result.rows[0]);
   } catch (error) {
+    console.error('Error creating meetup:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -121,6 +127,7 @@ const registerForMeetup = async (req, res) => {
 
     res.json({ message: 'Registration successful' });
   } catch (error) {
+    console.error('Error registering for meetup:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -146,6 +153,7 @@ const unregisterFromMeetup = async (req, res) => {
 
     res.json({ message: 'Unregistered successfully' });
   } catch (error) {
+    console.error('Error unregistering from meetup:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -177,6 +185,7 @@ const addReview = async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (error) {
+    console.error('Error adding review:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -196,6 +205,7 @@ const getReviews = async (req, res) => {
 
     res.json(result.rows);
   } catch (error) {
+    console.error('Error fetching reviews:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -209,4 +219,3 @@ module.exports = {
   addReview,
   getReviews
 };
-

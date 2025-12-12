@@ -50,164 +50,82 @@ function Profile() {
   };
 
   const styles = {
-    container: {
-      minHeight: '100vh',
-      padding: '20px',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-    },
-    navbar: {
-      background: 'white',
-      borderRadius: '16px',
-      padding: '20px 30px',
-      marginBottom: '30px',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      maxWidth: '1200px',
-      margin: '0 auto 30px'
-    },
-    logo: {
-      fontSize: '24px',
-      fontWeight: 'bold',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      textDecoration: 'none'
-    },
-    navLinks: {
-      display: 'flex',
-      gap: '20px',
-      alignItems: 'center'
-    },
-    navLink: {
-      color: '#1a202c',
-      textDecoration: 'none',
-      fontWeight: '600',
-      fontSize: '14px'
-    },
-    button: {
-      padding: '10px 20px',
-      fontSize: '14px',
-      fontWeight: '600',
-      color: 'white',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      border: 'none',
-      borderRadius: '8px',
-      cursor: 'pointer'
-    },
-    content: {
-      maxWidth: '1200px',
-      margin: '0 auto'
-    },
-    profileHeader: {
-      background: 'white',
-      borderRadius: '16px',
-      padding: '30px',
-      marginBottom: '30px',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-    },
-    section: {
-      background: 'white',
-      borderRadius: '16px',
-      padding: '30px',
-      marginBottom: '30px',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-    },
-    sectionTitle: {
-      fontSize: '24px',
-      fontWeight: 'bold',
-      marginBottom: '20px',
-      color: '#1a202c'
-    },
-    meetupCard: {
-      padding: '20px',
-      background: '#f7fafc',
-      borderRadius: '12px',
-      marginBottom: '16px'
-    },
-    meetupTitle: {
-      fontSize: '18px',
-      fontWeight: 'bold',
-      marginBottom: '8px',
-      color: '#1a202c'
-    },
-    meetupInfo: {
-      fontSize: '14px',
-      color: '#718096',
-      marginBottom: '4px'
-    },
-    empty: {
-      textAlign: 'center',
-      padding: '40px',
-      color: '#718096'
-    }
+    // ... we will use classes mostly
   };
 
   if (!user) return null;
 
   return (
-    <div style={styles.container}>
-      <div style={styles.navbar}>
-        <Link to="/meetups" style={styles.logo}>Meetup App</Link>
-        <div style={styles.navLinks}>
-          <Link to="/meetups" style={styles.navLink}>Meetups</Link>
-          <Link to="/profile" style={styles.navLink}>Profile</Link>
-          <span style={{ fontWeight: '600', color: '#1a202c' }}>{user.username}</span>
-          <button onClick={handleLogout} style={styles.button}>Logout</button>
+    <div style={{ minHeight: '100vh', padding: '20px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+      <div className="navbar glass" style={{ maxWidth: '1200px', margin: '0 auto 30px' }}>
+        <Link to="/meetups" style={{ fontSize: '24px', fontWeight: 'bold', background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textDecoration: 'none' }}>Meetup App</Link>
+        <div className="nav-links">
+          <Link to="/meetups" className="btn-primary" style={{ textDecoration: 'none', fontSize: '14px' }}>Meetups</Link>
+          <button onClick={handleLogout} className="btn-primary" style={{ fontSize: '14px' }}>Logout</button>
         </div>
       </div>
 
-      <div style={styles.content}>
-        <div style={styles.profileHeader}>
-          <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px', color: '#1a202c' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="glass" style={{ padding: '40px', borderRadius: '24px', marginBottom: '30px', textAlign: 'center' }}>
+          <div style={{ width: '80px', height: '80px', background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)', borderRadius: '50%', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: 'white', fontWeight: 'bold' }}>
+            {user.username.charAt(0).toUpperCase()}
+          </div>
+          <h1 style={{ fontSize: '36px', fontWeight: '800', marginBottom: '8px', color: 'var(--text)' }}>
             {user.username}
           </h1>
-          <p style={{ color: '#718096' }}>{user.email}</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>{user.email}</p>
         </div>
 
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Upcoming Meetups</h2>
+        <div className="glass" style={{ padding: '30px', borderRadius: '24px', marginBottom: '30px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', color: 'var(--text)' }}>Upcoming Meetups</h2>
           {loading ? (
-            <p style={styles.empty}>Loading...</p>
+            <p style={{ textAlign: 'center', padding: '20px', color: 'var(--text-secondary)' }}>Loading...</p>
           ) : upcomingMeetups.length === 0 ? (
-            <p style={styles.empty}>No upcoming meetups</p>
+            <p style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No upcoming meetups</p>
           ) : (
-            upcomingMeetups.map(meetup => (
-              <Link key={meetup.id} to={`/meetups/${meetup.id}`} style={{ textDecoration: 'none' }}>
-                <div style={styles.meetupCard}>
-                  <h3 style={styles.meetupTitle}>{meetup.title}</h3>
-                  <p style={styles.meetupInfo}>
-                    📅 {new Date(meetup.date).toLocaleDateString()} at {new Date(meetup.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                  <p style={styles.meetupInfo}>📍 {meetup.location}</p>
-                  <p style={styles.meetupInfo}>
-                    {meetup.registered_count}/{meetup.capacity} joined
-                  </p>
-                </div>
-              </Link>
-            ))
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+              {upcomingMeetups.map(meetup => (
+                <Link key={meetup.id} to={`/meetups/${meetup.id}`} style={{ textDecoration: 'none' }}>
+                  <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '20px', transition: 'transform 0.2s', border: '1px solid rgba(255,255,255,0.1)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: 'var(--secondary)' }}>{meetup.title}</h3>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '6px' }}>
+                      📅 {new Date(meetup.date).toLocaleDateString()} at {new Date(meetup.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '6px' }}>📍 {meetup.location}</p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+                      👥 {meetup.registered_count}/{meetup.capacity} joined
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           )}
         </div>
 
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Past Meetups</h2>
+        <div className="glass" style={{ padding: '30px', borderRadius: '24px', marginBottom: '30px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', color: 'var(--text)' }}>Past Meetups</h2>
           {loading ? (
-            <p style={styles.empty}>Loading...</p>
+            <p style={{ textAlign: 'center', padding: '20px', color: 'var(--text-secondary)' }}>Loading...</p>
           ) : pastMeetups.length === 0 ? (
-            <p style={styles.empty}>No past meetups</p>
+            <p style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No past meetups</p>
           ) : (
-            pastMeetups.map(meetup => (
-              <Link key={meetup.id} to={`/meetups/${meetup.id}`} style={{ textDecoration: 'none' }}>
-                <div style={styles.meetupCard}>
-                  <h3 style={styles.meetupTitle}>{meetup.title}</h3>
-                  <p style={styles.meetupInfo}>
-                    📅 {new Date(meetup.date).toLocaleDateString()}
-                  </p>
-                  <p style={styles.meetupInfo}>📍 {meetup.location}</p>
-                </div>
-              </Link>
-            ))
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+              {pastMeetups.map(meetup => (
+                <Link key={meetup.id} to={`/meetups/${meetup.id}`} style={{ textDecoration: 'none' }}>
+                  <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '20px', transition: 'transform 0.2s', border: '1px solid rgba(255,255,255,0.1)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: 'var(--secondary)' }}>{meetup.title}</h3>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '6px' }}>
+                      📅 {new Date(meetup.date).toLocaleDateString()}
+                    </p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>📍 {meetup.location}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           )}
         </div>
       </div>

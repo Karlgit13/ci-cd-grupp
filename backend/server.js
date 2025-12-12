@@ -5,23 +5,21 @@ const db = require('./db');
 const authRoutes = require('./routes/auth');
 const meetupRoutes = require('./routes/meetups');
 const userRoutes = require('./routes/users');
-const reviewRoutes = require('./routes/reviews');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// CORS configuration
 const allowedOrigins = [
   "http://localhost:3000",
-  "http://localhost:5173",
+  "http://localhost:3001",
   "https://ci-cd-frontend-karl.onrender.com",
 ];
 
-// CORS-middleware configuration
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
@@ -34,7 +32,6 @@ app.use(
   })
 );
 
-// Handle preflight / OPTIONS
 app.options("*", cors());
 app.use(express.json());
 
@@ -57,22 +54,18 @@ app.get('/', (req, res) => {
   res.json({ message: 'API running' });
 });
 
-// Mount routes WITHOUT /api prefix
+// Mount routes
 app.use('/auth', authRoutes);
-app.use('/meetups', reviewRoutes); // Mount reviews at /meetups/:id/reviews
 app.use('/meetups', meetupRoutes);
 app.use('/users', userRoutes);
 
 app.use(errorHandler);
 
 async function start() {
-  // Try to initialize database, but don't crash if it fails
   await db.init();
-
   app.listen(PORT, () => {
     console.log(`\n🚀 API running on port ${PORT}`);
     console.log(`   Health: http://localhost:${PORT}/health`);
-    console.log(`   Auth Health: http://localhost:${PORT}/auth/health\n`);
   });
 }
 

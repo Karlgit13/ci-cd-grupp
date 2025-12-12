@@ -122,18 +122,7 @@ function MeetupDetail() {
       padding: '20px',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
     },
-    navbar: {
-      background: 'white',
-      borderRadius: '16px',
-      padding: '20px 30px',
-      marginBottom: '30px',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      maxWidth: '900px',
-      margin: '0 auto 30px'
-    },
+    // navbar style removed in favor of CSS class
     logo: {
       fontSize: '24px',
       fontWeight: 'bold',
@@ -142,11 +131,7 @@ function MeetupDetail() {
       WebkitTextFillColor: 'transparent',
       textDecoration: 'none'
     },
-    userInfo: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '20px'
-    },
+    // userInfo style removed in favor of CSS class
     button: {
       padding: '10px 20px',
       fontSize: '14px',
@@ -277,9 +262,9 @@ function MeetupDetail() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.navbar}>
+      <div className="navbar" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', maxWidth: '900px', margin: '0 auto 30px' }}>
         <Link to="/" style={styles.logo}>Meetup App</Link>
-        <div style={styles.userInfo}>
+        <div className="nav-links">
           <span style={{ fontWeight: '600', color: '#1a202c' }}>Hi, {user.username}!</span>
           <button onClick={handleLogout} style={styles.button}>Logout</button>
         </div>

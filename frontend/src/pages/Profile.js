@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getCurrentUser, getAuthToken, logout } from '../services/api';
+import { API_URL } from '../config/apiConfig';
 
 function Profile() {
   const [upcomingMeetups, setUpcomingMeetups] = useState([]);
@@ -19,9 +20,9 @@ function Profile() {
 
   const fetchUserMeetups = async () => {
     try {
-      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+      // API_URL imported from config
       const token = getAuthToken();
-      
+
       const [upcomingRes, pastRes] = await Promise.all([
         fetch(`${API_URL}/users/me/meetups`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -33,7 +34,7 @@ function Profile() {
 
       const upcoming = await upcomingRes.json();
       const past = await pastRes.json();
-      
+
       setUpcomingMeetups(upcoming);
       setPastMeetups(past);
     } catch (error) {

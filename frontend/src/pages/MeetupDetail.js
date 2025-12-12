@@ -2,24 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   getCurrentUser,
-  getAuthToken,
   logout,
   getMeetupById,
   registerForMeetup,
   unregisterFromMeetup,
-  getUserMeetups,
-  getReviews,
-  addReview
+  getUserMeetups
 } from '../services/api';
+import Reviews from '../components/Reviews';
 
 function MeetupDetail() {
   const [meetup, setMeetup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
-  const [reviews, setReviews] = useState([]);
-  const [rating, setRating] = useState(5);
-  const [comment, setComment] = useState('');
   const [message, setMessage] = useState('');
   const { id } = useParams();
   const user = getCurrentUser();
@@ -29,7 +24,6 @@ function MeetupDetail() {
     if (id) {
       fetchMeetup();
       checkRegistration();
-      fetchReviewsData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -55,6 +49,8 @@ function MeetupDetail() {
       }
     } catch (error) {
       console.error('Error checking registration:', error);
+      // Fail gracefully
+      setIsRegistered(false);
     }
   };
 
@@ -66,7 +62,7 @@ function MeetupDetail() {
       await registerForMeetup(id);
       setMessage('Successfully registered!');
       setIsRegistered(true);
-      fetchMeetup();
+      fetchMeetup(); // Update counts
     } catch (error) {
       setMessage(error.message || 'Error registering for meetup');
     } finally {
@@ -86,35 +82,11 @@ function MeetupDetail() {
       await unregisterFromMeetup(id);
       setMessage('Successfully unregistered!');
       setIsRegistered(false);
-      fetchMeetup();
+      fetchMeetup(); // Update counts
     } catch (error) {
       setMessage(error.message || 'Error unregistering from meetup');
     } finally {
       setRegistering(false);
-    }
-  };
-
-  const fetchReviewsData = async () => {
-    try {
-      const data = await getReviews(id);
-      setReviews(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Error fetching reviews:', error);
-    }
-  };
-
-  const handleSubmitReview = async (e) => {
-    e.preventDefault();
-    setMessage('');
-
-    try {
-      await addReview(id, { rating, comment });
-      setMessage('Review submitted successfully!');
-      setComment('');
-      setRating(5);
-      fetchReviewsData();
-    } catch (error) {
-      setMessage(error.message || 'Failed to submit review');
     }
   };
 
@@ -129,7 +101,6 @@ function MeetupDetail() {
       padding: '20px',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
     },
-    // navbar style removed in favor of CSS class
     logo: {
       fontSize: '24px',
       fontWeight: 'bold',
@@ -137,17 +108,6 @@ function MeetupDetail() {
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
       textDecoration: 'none'
-    },
-    // userInfo style removed in favor of CSS class
-    button: {
-      padding: '10px 20px',
-      fontSize: '14px',
-      fontWeight: '600',
-      color: 'white',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      border: 'none',
-      borderRadius: '8px',
-      cursor: 'pointer'
     },
     content: {
       maxWidth: '900px',
@@ -215,28 +175,6 @@ function MeetupDetail() {
       marginTop: '16px',
       textAlign: 'center',
       fontWeight: '600'
-    },
-    reviewSection: {
-      marginTop: '40px',
-      paddingTop: '40px',
-      borderTop: '2px solid #e2e8f0'
-    },
-    reviewForm: {
-      background: '#f7fafc',
-      padding: '24px',
-      borderRadius: '12px',
-      marginBottom: '30px'
-    },
-    reviewCard: {
-      background: '#f7fafc',
-      padding: '20px',
-      borderRadius: '12px',
-      marginBottom: '16px'
-    },
-    stars: {
-      color: '#f6ad55',
-      fontSize: '18px',
-      marginBottom: '8px'
     }
   };
 
@@ -266,6 +204,7 @@ function MeetupDetail() {
   }
 
   const isFull = meetup.registered_count >= meetup.capacity;
+  const isPast = new Date(meetup.date) < new Date();
 
   return (
     <div style={styles.container}>
@@ -308,42 +247,61 @@ function MeetupDetail() {
 
         <div style={styles.infoBox}>
           <div style={styles.infoRow}>
-            <span style={{ fontWeight: '600', color: '#1a202c' }}>Capacity:</span>
-            <span>{meetup.registered_count} / {meetup.capacity} spots filled</span>
+            <span style={{ fontWeight: '600', color: '#1a202c' }}>Registration:</span>
+            {/* Show: "X/Y joined" */}
+            <span>{meetup.registered_count}/{meetup.capacity} joined</span>
           </div>
           <div style={styles.infoRow}>
             <span style={{ fontWeight: '600', color: '#1a202c' }}>Status:</span>
-            <span style={{ color: isFull ? '#e53e3e' : '#38a169' }}>
+            <span style={{ color: isFull ? '#e53e3e' : '#38a169', fontWeight: 'bold' }}>
               {isFull ? 'Full' : 'Spots Available'}
             </span>
           </div>
         </div>
 
-        {isRegistered ? (
-          <button
-            onClick={handleUnregister}
-            disabled={registering}
-            style={{
-              ...styles.registerButton,
-              background: '#e53e3e',
-              opacity: registering ? 0.5 : 1,
-              cursor: registering ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {registering ? 'Processing...' : 'Unregister from Meetup'}
-          </button>
-        ) : (
-          <button
-            onClick={handleRegister}
-            disabled={registering || isFull}
-            style={{
-              ...styles.registerButton,
-              opacity: registering || isFull ? 0.5 : 1,
-              cursor: registering || isFull ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {registering ? 'Registering...' : isFull ? 'Meetup Full' : 'Register for Meetup'}
-          </button>
+        {/* Action Button */}
+        {!isPast && (
+          isRegistered ? (
+            <button
+              onClick={handleUnregister}
+              disabled={registering}
+              style={{
+                ...styles.registerButton,
+                background: '#e53e3e',
+                opacity: registering ? 0.5 : 1,
+                cursor: registering ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {registering ? 'Processing...' : 'Unregister from Meetup'}
+            </button>
+          ) : (
+            <button
+              onClick={handleRegister}
+              disabled={registering || isFull}
+              style={{
+                ...styles.registerButton,
+                opacity: registering || isFull ? 0.5 : 1,
+                cursor: registering || isFull ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {registering ? 'Registering...' : isFull ? 'Meetup Full' : 'Register for Meetup'}
+            </button>
+          )
+        )}
+
+        {/* Past Event Message */}
+        {isPast && (
+          <div style={{
+            padding: '16px',
+            background: '#edf2f7',
+            borderRadius: '8px',
+            marginTop: '20px',
+            textAlign: 'center',
+            color: '#4a5568',
+            fontStyle: 'italic'
+          }}>
+            This event has already taken place.
+          </div>
         )}
 
         {message && (
@@ -356,69 +314,12 @@ function MeetupDetail() {
           </div>
         )}
 
-        <div style={styles.reviewSection}>
-          <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', color: '#1a202c' }}>
-            Reviews ({reviews.length})
-          </h2>
-
-          {meetup && new Date(meetup.date) < new Date() && isRegistered && (
-            <div style={styles.reviewForm}>
-              <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#1a202c' }}>
-                Leave a Review
-              </h3>
-              <form onSubmit={handleSubmitReview}>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#4a5568' }}>
-                    Rating
-                  </label>
-                  <select
-                    value={rating}
-                    onChange={(e) => setRating(parseInt(e.target.value))}
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #e2e8f0' }}
-                  >
-                    <option value={5}>⭐⭐⭐⭐⭐ - Excellent</option>
-                    <option value={4}>⭐⭐⭐⭐ - Good</option>
-                    <option value={3}>⭐⭐⭐ - Average</option>
-                    <option value={2}>⭐⭐ - Poor</option>
-                    <option value={1}>⭐ - Terrible</option>
-                  </select>
-                </div>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#4a5568' }}>
-                    Comment
-                  </label>
-                  <textarea
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    rows={4}
-                    required
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #e2e8f0', fontFamily: 'inherit' }}
-                  />
-                </div>
-                <button type="submit" style={{ ...styles.button, width: 'auto' }}>
-                  Submit Review
-                </button>
-              </form>
-            </div>
-          )}
-
-          {reviews.length === 0 ? (
-            <p style={{ textAlign: 'center', color: '#718096', padding: '20px' }}>No reviews yet</p>
-          ) : (
-            reviews.map(review => (
-              <div key={review.id} style={styles.reviewCard}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <span style={{ fontWeight: '600', color: '#1a202c' }}>{review.username}</span>
-                  <span style={styles.stars}>{'⭐'.repeat(review.rating)}</span>
-                </div>
-                <p style={{ color: '#4a5568', lineHeight: '1.6' }}>{review.comment}</p>
-                <p style={{ fontSize: '12px', color: '#a0aec0', marginTop: '8px' }}>
-                  {new Date(review.created_at).toLocaleDateString()}
-                </p>
-              </div>
-            ))
-          )}
-        </div>
+        {/* Reviews Section */}
+        <Reviews
+          meetupId={id}
+          isAttended={isRegistered}
+          isPast={isPast}
+        />
       </div>
     </div>
   );

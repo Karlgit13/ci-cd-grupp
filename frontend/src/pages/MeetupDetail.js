@@ -6,7 +6,6 @@ import {
   getMeetupById,
   registerForMeetup,
   unregisterFromMeetup,
-  getUserMeetups
 } from '../services/api';
 import Reviews from '../components/Reviews';
 
@@ -14,7 +13,6 @@ function MeetupDetail() {
   const [meetup, setMeetup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
-  const [isRegistered, setIsRegistered] = useState(false);
   const [message, setMessage] = useState('');
   const { id } = useParams();
   const user = getCurrentUser();
@@ -23,7 +21,6 @@ function MeetupDetail() {
   useEffect(() => {
     if (id) {
       fetchMeetup();
-      checkRegistration();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -39,21 +36,6 @@ function MeetupDetail() {
     }
   };
 
-  const checkRegistration = async () => {
-    try {
-      const meetups = await getUserMeetups();
-      if (Array.isArray(meetups)) {
-        setIsRegistered(meetups.some(m => m.id === parseInt(id)));
-      } else {
-        setIsRegistered(false);
-      }
-    } catch (error) {
-      console.error('Error checking registration:', error);
-      // Fail gracefully
-      setIsRegistered(false);
-    }
-  };
-
   const handleRegister = async () => {
     setRegistering(true);
     setMessage('');
@@ -61,8 +43,7 @@ function MeetupDetail() {
     try {
       await registerForMeetup(id);
       setMessage('Successfully registered!');
-      setIsRegistered(true);
-      fetchMeetup(); // Update counts
+      fetchMeetup(); // Update counts and status from backend
     } catch (error) {
       setMessage(error.message || 'Error registering for meetup');
     } finally {
@@ -81,8 +62,7 @@ function MeetupDetail() {
     try {
       await unregisterFromMeetup(id);
       setMessage('Successfully unregistered!');
-      setIsRegistered(false);
-      fetchMeetup(); // Update counts
+      fetchMeetup(); // Update counts and status from backend
     } catch (error) {
       setMessage(error.message || 'Error unregistering from meetup');
     } finally {
@@ -203,8 +183,10 @@ function MeetupDetail() {
     );
   }
 
-  const isFull = meetup.registered_count >= meetup.capacity;
-  const isPast = new Date(meetup.date) < new Date();
+  // Use values directly from backend
+  const { registeredCount, capacity, isRegistered, hasAttended, date } = meetup;
+  const isFull = registeredCount >= capacity;
+  const isPast = new Date(date) < new Date();
 
   return (
     <div style={styles.container}>
@@ -237,7 +219,7 @@ function MeetupDetail() {
         <h1 style={styles.title}>{meetup.title}</h1>
 
         <div style={styles.meta}>
-          <span>📅 {new Date(meetup.date).toLocaleDateString()} at {new Date(meetup.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          <span>📅 {new Date(date).toLocaleDateString()} at {new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
           <span>📍 {meetup.location}</span>
           <span>🏷️ {meetup.category}</span>
           <span>👤 Hosted by {meetup.host_name}</span>
@@ -247,15 +229,22 @@ function MeetupDetail() {
 
         <div style={styles.infoBox}>
           <div style={styles.infoRow}>
-            <span style={{ fontWeight: '600', color: '#1a202c' }}>Registration:</span>
-            {/* Show: "X/Y joined" */}
-            <span>{meetup.registered_count}/{meetup.capacity} joined</span>
+            <span style={{ fontWeight: '600', color: '#1a202c' }}>Registration Status:</span>
+            <span>{registeredCount}/{capacity} joined</span>
           </div>
-          <div style={styles.infoRow}>
-            <span style={{ fontWeight: '600', color: '#1a202c' }}>Status:</span>
-            <span style={{ color: isFull ? '#e53e3e' : '#38a169', fontWeight: 'bold' }}>
-              {isFull ? 'Full' : 'Spots Available'}
-            </span>
+          {/* Status color indicator based on fullness */}
+          <div style={{
+            height: '6px',
+            background: '#e2e8f0',
+            borderRadius: '3px',
+            overflow: 'hidden',
+            marginTop: '8px'
+          }}>
+            <div style={{
+              width: `${Math.min((registeredCount / capacity) * 100, 100)}%`,
+              background: isFull ? '#e53e3e' : '#48bb78',
+              height: '100%'
+            }} />
           </div>
         </div>
 
@@ -314,10 +303,10 @@ function MeetupDetail() {
           </div>
         )}
 
-        {/* Reviews Section */}
+        {/* Reviews Section - Always visible, but form is conditional */}
         <Reviews
           meetupId={id}
-          isAttended={isRegistered}
+          isAttended={hasAttended}
           isPast={isPast}
         />
       </div>

@@ -155,7 +155,20 @@ function CreateMeetup() {
         <div className="nav-links">
           <Link to="/meetups" className="btn-primary" style={{ textDecoration: 'none', fontSize: '14px' }}>Meetups</Link>
           <Link to="/profile" className="btn-primary" style={{ textDecoration: 'none', fontSize: '14px' }}>Profile</Link>
-          <button onClick={handleLogout} className="btn-primary" style={{ fontSize: '14px' }}>Logout</button>
+          <button
+            onClick={handleLogout}
+            style={{
+              background: 'transparent',
+              border: '1px solid var(--text-secondary)',
+              color: 'var(--text-secondary)',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            Logout
+          </button>
         </div>
       </div>
 

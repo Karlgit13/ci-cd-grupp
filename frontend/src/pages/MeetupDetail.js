@@ -26,9 +26,12 @@ function MeetupDetail() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchMeetup();
-    checkRegistration();
-    fetchReviewsData();
+    if (id) {
+      fetchMeetup();
+      checkRegistration();
+      fetchReviewsData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchMeetup = async () => {
@@ -269,8 +272,23 @@ function MeetupDetail() {
       <div className="navbar" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', maxWidth: '900px', margin: '0 auto 30px' }}>
         <Link to="/" style={styles.logo}>Meetup App</Link>
         <div className="nav-links">
+          <Link to="/meetups" className="btn-primary" style={{ textDecoration: 'none', fontSize: '14px' }}>Back</Link>
           <span style={{ fontWeight: '600', color: '#1a202c' }}>Hi, {user.username}!</span>
-          <button onClick={handleLogout} style={styles.button}>Logout</button>
+          <button
+            onClick={handleLogout}
+            style={{
+              background: 'transparent',
+              border: '1px solid #718096',
+              color: '#718096',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              fontSize: '14px'
+            }}
+          >
+            Logout
+          </button>
         </div>
       </div>
 

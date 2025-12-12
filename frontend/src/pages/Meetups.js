@@ -59,14 +59,7 @@ function Meetups() {
 
   return (
     <div className="container" style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <nav className="glass" style={{
-        padding: '20px 30px',
-        borderRadius: '16px',
-        marginBottom: '40px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
+      <nav className="glass navbar">
         <Link to="/" style={{ textDecoration: 'none' }}>
           <div style={{
             fontSize: '28px',
@@ -78,16 +71,15 @@ function Meetups() {
             Meetup App
           </div>
         </Link>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <div className="nav-links">
           {user ? (
             <>
               <Link to="/create-meetup" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block' }}>
                 Create Meetup
               </Link>
-              <Link to="/profile" style={{ color: 'white', textDecoration: 'none', fontWeight: '600' }}>
+              <Link to="/profile" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block' }}>
                 Profile
               </Link>
-              <span style={{ color: 'var(--text-secondary)' }}>Hi, {user.username}</span>
               <button
                 onClick={handleLogout}
                 style={{
@@ -132,8 +124,8 @@ function Meetups() {
       </div>
 
       <div style={{ maxWidth: '800px', margin: '0 auto 50px' }}>
-        <div className="glass" style={{ padding: '10px', borderRadius: '16px', display: 'flex', gap: '10px' }}>
-          <form onSubmit={handleSearch} style={{ flex: 1, display: 'flex' }}>
+        <div className="glass" style={{ padding: '10px', borderRadius: '16px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <form onSubmit={handleSearch} style={{ flex: 1, display: 'flex', minWidth: '200px' }}>
             <input
               type="text"
               placeholder="Search for meetups..."
@@ -166,12 +158,37 @@ function Meetups() {
           <div className="glass" style={{ marginTop: '20px', padding: '20px', borderRadius: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-secondary)' }}>Date</label>
-              <input
-                type="date"
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                className="input-field"
-              />
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="input-field"
+                  style={{ width: '100%', paddingRight: dateFilter ? '30px' : '10px' }}
+                />
+                {dateFilter && (
+                  <button
+                    type="button"
+                    onClick={() => setDateFilter('')}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      padding: '0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    title="Clear date"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-secondary)' }}>Location</label>
@@ -215,7 +232,7 @@ function Meetups() {
       ) : (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
           gap: '30px'
         }}>
           {meetups.map(meetup => (

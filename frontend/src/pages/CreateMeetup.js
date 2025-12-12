@@ -51,18 +51,7 @@ function CreateMeetup() {
       padding: '20px',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
     },
-    navbar: {
-      background: 'white',
-      borderRadius: '16px',
-      padding: '20px 30px',
-      marginBottom: '30px',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      maxWidth: '900px',
-      margin: '0 auto 30px'
-    },
+    // navbar style removed in favor of CSS class
     logo: {
       fontSize: '24px',
       fontWeight: 'bold',
@@ -71,11 +60,7 @@ function CreateMeetup() {
       WebkitTextFillColor: 'transparent',
       textDecoration: 'none'
     },
-    navLinks: {
-      display: 'flex',
-      gap: '20px',
-      alignItems: 'center'
-    },
+    // navLinks style removed in favor of CSS class
     navLink: {
       color: '#1a202c',
       textDecoration: 'none',
@@ -97,7 +82,7 @@ function CreateMeetup() {
       margin: '0 auto',
       background: 'white',
       borderRadius: '16px',
-      padding: '40px',
+      padding: '30px',
       boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
     },
     title: {
@@ -165,13 +150,12 @@ function CreateMeetup() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.navbar}>
+      <div className="navbar" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', maxWidth: '900px', margin: '0 auto 30px' }}>
         <Link to="/meetups" style={styles.logo}>Meetup App</Link>
-        <div style={styles.navLinks}>
-          <Link to="/meetups" style={styles.navLink}>Meetups</Link>
-          <Link to="/profile" style={styles.navLink}>Profile</Link>
-          <span style={{ fontWeight: '600', color: '#1a202c' }}>{user.username}</span>
-          <button onClick={handleLogout} style={styles.button}>Logout</button>
+        <div className="nav-links">
+          <Link to="/meetups" className="btn-primary" style={{ textDecoration: 'none', fontSize: '14px' }}>Meetups</Link>
+          <Link to="/profile" className="btn-primary" style={{ textDecoration: 'none', fontSize: '14px' }}>Profile</Link>
+          <button onClick={handleLogout} className="btn-primary" style={{ fontSize: '14px' }}>Logout</button>
         </div>
       </div>
 
@@ -204,7 +188,7 @@ function CreateMeetup() {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
             <div style={styles.inputGroup}>
               <label style={styles.label}>Date</label>
               <input
@@ -241,7 +225,7 @@ function CreateMeetup() {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
             <div style={styles.inputGroup}>
               <label style={styles.label}>Category</label>
               <select

@@ -1,3 +1,19 @@
+// Hack: wrap ResizeObserver callbacks in requestAnimationFrame
+// to avoid "ResizeObserver loop completed with undelivered notifications" noise.
+if (typeof window !== "undefined" && "ResizeObserver" in window) {
+  const OriginalResizeObserver = window.ResizeObserver;
+
+  window.ResizeObserver = class ResizeObserverPatched extends OriginalResizeObserver {
+    constructor(callback) {
+      super((entries, observer) => {
+        window.requestAnimationFrame(() => {
+          callback(entries, observer);
+        });
+      });
+    }
+  };
+}
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';

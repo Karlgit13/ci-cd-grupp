@@ -20,4 +20,21 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-module.exports = { authenticateToken };
+const optionalAuth = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return next();
+  }
+
+  jwt.verify(token, config.JWT_SECRET, (err, user) => {
+    // If token is invalid, just proceed as guest (no error)
+    if (!err) {
+      req.user = user;
+    }
+    next();
+  });
+};
+
+module.exports = { authenticateToken, optionalAuth };

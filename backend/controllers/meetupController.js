@@ -53,20 +53,33 @@ const getAllMeetups = async (req, res) => {
 const getMeetupById = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user ? req.user.id : null;
+
     const result = await db.query(
       `SELECT m.*, u.username as host_name,
-       (SELECT COUNT(*) FROM registrations WHERE meetup_id = m.id) as registered_count
+       (SELECT COUNT(*)::int FROM registrations WHERE meetup_id = m.id) as "registeredCount",
+       CASE 
+         WHEN $2::int IS NOT NULL THEN 
+           EXISTS(SELECT 1 FROM registrations WHERE meetup_id = m.id AND user_id = $2)
+         ELSE false 
+       END as "isRegistered"
        FROM meetups m
        JOIN users u ON m.host_id = u.id
        WHERE m.id = $1`,
-      [id]
+      [id, userId]
     );
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Meetup not found' });
     }
 
-    res.json(result.rows[0]);
+    const meetup = result.rows[0];
+
+    // Logic: hasAttended = isRegistered && meetup.date < NOW()
+    const isPast = new Date(meetup.date) < new Date();
+    meetup.hasAttended = meetup.isRegistered && isPast;
+
+    res.json(meetup);
   } catch (error) {
     console.error('Error fetching meetup:', error);
     res.status(500).json({ error: 'Server error' });
@@ -158,64 +171,10 @@ const unregisterFromMeetup = async (req, res) => {
   }
 };
 
-const addReview = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { rating, comment } = req.body;
-    const userId = req.user.id;
-
-    // Check if user attended
-    const registration = await db.query(
-      'SELECT * FROM registrations WHERE user_id = $1 AND meetup_id = $2',
-      [userId, id]
-    );
-
-    if (registration.rows.length === 0) {
-      return res.status(403).json({ error: 'You can only review meetups you attended' });
-    }
-
-    const result = await db.query(
-      `INSERT INTO reviews (user_id, meetup_id, rating, comment)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (user_id, meetup_id) 
-       DO UPDATE SET rating = $3, comment = $4, created_at = CURRENT_TIMESTAMP
-       RETURNING *`,
-      [userId, id, rating, comment]
-    );
-
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Error adding review:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-};
-
-const getReviews = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const result = await db.query(
-      `SELECT r.*, u.username
-       FROM reviews r
-       JOIN users u ON r.user_id = u.id
-       WHERE r.meetup_id = $1
-       ORDER BY r.created_at DESC`,
-      [id]
-    );
-
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Error fetching reviews:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-};
-
 module.exports = {
   getAllMeetups,
   getMeetupById,
   createMeetup,
   registerForMeetup,
-  unregisterFromMeetup,
-  addReview,
-  getReviews
+  unregisterFromMeetup
 };

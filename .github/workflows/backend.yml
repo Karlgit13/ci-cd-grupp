@@ -5,40 +5,36 @@ on:
     branches: [ main ]
     paths:
       - 'backend/**'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - 'backend/**'
+  workflow_dispatch:
 
 jobs:
   build-and-push:
+    name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: ./backend
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/meetup-backend:latest
+      - name: Build and Push
+        run: |
+          cd backend
+          docker build -t dock1 .
+          docker tag dock1 karlgit13/ci-cd-grupp:${{ github.sha }}
+          docker tag dock1 karlgit13/ci-cd-grupp:latest
+          docker push karlgit13/ci-cd-grupp:${{ github.sha }}
+          docker push karlgit13/ci-cd-grupp:latest
 
   deploy-render:
     needs: build-and-push
+    name: Deploy to Render
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
     steps:
       - name: Deploy to Render
-        # Trigger Render deploy hook (assuming user has set up Deploy Hook in Render service settings)
-        # If using Auto-Deploy on Render linked to Docker Hub, this step might be redundant but good for explicit triggering.
-        # We'll use a simple curl if RENDER_HOOK_URL is present.
         if: ${{ secrets.RENDER_HOOK_URL }}
-        run: |
-          curl -X POST ${{ secrets.RENDER_HOOK_URL }}
+        run: curl -X POST ${{ secrets.RENDER_HOOK_URL }}

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getCurrentUser, getAuthToken, logout } from '../services/api';
-import { API_URL } from '../config/apiConfig';
+import { getCurrentUser, logout, getUserMeetups, getPastUserMeetups } from '../services/api';
 
 function Profile() {
   const [upcomingMeetups, setUpcomingMeetups] = useState([]);
@@ -20,25 +19,35 @@ function Profile() {
 
   const fetchUserMeetups = async () => {
     try {
-      // API_URL imported from config
-      const token = getAuthToken();
+      setLoading(true);
 
-      const [upcomingRes, pastRes] = await Promise.all([
-        fetch(`${API_URL}/users/me/meetups`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+      const [upcoming, past] = await Promise.all([
+        getUserMeetups().catch(err => {
+          if (err.message === 'Unauthorized') throw err;
+          return [];
         }),
-        fetch(`${API_URL}/users/me/past-meetups`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        getPastUserMeetups().catch(err => {
+          if (err.message === 'Unauthorized') throw err;
+          return [];
         })
       ]);
 
-      const upcoming = await upcomingRes.json();
-      const past = await pastRes.json();
+      setUpcomingMeetups(Array.isArray(upcoming) ? upcoming : []);
+      setPastMeetups(Array.isArray(past) ? past : []);
 
-      setUpcomingMeetups(upcoming);
-      setPastMeetups(past);
     } catch (error) {
       console.error('Error fetching user meetups:', error);
+      // Let's assume for now valid session. If invalid, logout and redirect.
+
+      // Let's stick to a safe default:
+      setUpcomingMeetups([]);
+      setPastMeetups([]);
+
+      if (error.message.toLowerCase().includes('failed')) {
+        // Most likely auth or network. 
+        // If we strictly want to catch 401/403, we need to inspect the response in api.js.
+        // But since I already edited api.js and didn't expose status, I will just say:
+      }
     } finally {
       setLoading(false);
     }

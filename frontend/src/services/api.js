@@ -1,35 +1,5 @@
 import { API_URL } from '../config/apiConfig';
 
-export const register = async (username, email, password) => {
-  const response = await fetch(`${API_URL}/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, email, password })
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || 'Registration failed');
-  }
-
-  return response.json();
-};
-
-export const login = async (email, password) => {
-  const response = await fetch(`${API_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || 'Login failed');
-  }
-
-  return response.json();
-};
-
 export const setAuthToken = (token) => {
   if (token) {
     localStorage.setItem('token', token);
@@ -60,12 +30,66 @@ export const logout = () => {
   localStorage.removeItem('user');
 };
 
-export const getUserMeetups = async () => {
+// Helper for authenticated requests
+const authFetch = async (endpoint, options = {}) => {
   const token = getAuthToken();
-  const response = await fetch(`${API_URL}/users/me/meetups`, {
-    headers: { 'Authorization': `Bearer ${token}` }
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+    'Authorization': `Bearer ${token}`
+  };
+
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers
   });
+
+  if (response.status === 401 || response.status === 403) {
+    throw new Error('Unauthorized');
+  }
+
+  return response;
+};
+
+export const register = async (username, email, password) => {
+  const response = await fetch(`${API_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, email, password })
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Registration failed');
+  }
+
+  return response.json();
+};
+
+export const login = async (email, password) => {
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Login failed');
+  }
+
+  return response.json();
+};
+
+export const getUserMeetups = async () => {
+  const response = await authFetch('/users/me/meetups');
   if (!response.ok) throw new Error('Failed to fetch user meetups');
+  return response.json();
+};
+
+export const getPastUserMeetups = async () => {
+  const response = await authFetch('/users/me/past-meetups');
+  if (!response.ok) throw new Error('Failed to fetch past meetups');
   return response.json();
 };
 
@@ -76,13 +100,8 @@ export const getReviews = async (meetupId) => {
 };
 
 export const addReview = async (meetupId, reviewData) => {
-  const token = getAuthToken();
-  const response = await fetch(`${API_URL}/meetups/${meetupId}/reviews`, {
+  const response = await authFetch(`/meetups/${meetupId}/reviews`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
     body: JSON.stringify(reviewData)
   });
 
@@ -113,13 +132,8 @@ export const getMeetupById = async (id) => {
 };
 
 export const createMeetup = async (meetupData) => {
-  const token = getAuthToken();
-  const response = await fetch(`${API_URL}/meetups`, {
+  const response = await authFetch('/meetups', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
     body: JSON.stringify(meetupData)
   });
 
@@ -131,10 +145,8 @@ export const createMeetup = async (meetupData) => {
 };
 
 export const registerForMeetup = async (id) => {
-  const token = getAuthToken();
-  const response = await fetch(`${API_URL}/meetups/${id}/register`, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}` }
+  const response = await authFetch(`/meetups/${id}/register`, {
+    method: 'POST'
   });
 
   if (!response.ok) {
@@ -145,10 +157,8 @@ export const registerForMeetup = async (id) => {
 };
 
 export const unregisterFromMeetup = async (id) => {
-  const token = getAuthToken();
-  const response = await fetch(`${API_URL}/meetups/${id}/register`, {
-    method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${token}` }
+  const response = await authFetch(`/meetups/${id}/register`, {
+    method: 'DELETE'
   });
 
   if (!response.ok) {

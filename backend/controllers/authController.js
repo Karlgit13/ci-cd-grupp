@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+
 const db = require('../db');
+const config = require('../config');
 
 const register = async (req, res) => {
   try {
@@ -29,7 +31,7 @@ const register = async (req, res) => {
     const user = result.rows[0];
     const token = jwt.sign(
       { id: user.id, email: user.email },
-      process.env.JWT_SECRET || 'fallback-secret-change-in-production',
+      config.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
@@ -67,7 +69,7 @@ const login = async (req, res) => {
 
     const token = jwt.sign(
       { id: user.id, email: user.email },
-      process.env.JWT_SECRET || 'fallback-secret-change-in-production',
+      config.JWT_SECRET,
       { expiresIn: '7d' }
     );
 

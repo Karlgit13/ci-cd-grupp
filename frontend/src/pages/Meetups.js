@@ -26,7 +26,7 @@ function Meetups() {
         location: locationFilter,
         category: categoryFilter
       });
-      setMeetups(data);
+      setMeetups(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching meetups:', error);
     } finally {

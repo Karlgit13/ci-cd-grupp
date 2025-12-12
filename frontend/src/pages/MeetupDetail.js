@@ -45,7 +45,11 @@ function MeetupDetail() {
   const checkRegistration = async () => {
     try {
       const meetups = await getUserMeetups();
-      setIsRegistered(meetups.some(m => m.id === parseInt(id)));
+      if (Array.isArray(meetups)) {
+        setIsRegistered(meetups.some(m => m.id === parseInt(id)));
+      } else {
+        setIsRegistered(false);
+      }
     } catch (error) {
       console.error('Error checking registration:', error);
     }
@@ -90,7 +94,7 @@ function MeetupDetail() {
   const fetchReviewsData = async () => {
     try {
       const data = await getReviews(id);
-      setReviews(data);
+      setReviews(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching reviews:', error);
     }

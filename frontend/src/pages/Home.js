@@ -3,16 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../services/api';
 
 function Home() {
-  const user = getCurrentUser();
   const navigate = useNavigate();
 
   useEffect(() => {
+    const user = getCurrentUser();
     if (user) {
       navigate('/meetups');
     } else {
       navigate('/login');
     }
-  }, [user, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return null;
 }

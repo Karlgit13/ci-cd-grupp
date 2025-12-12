@@ -6,48 +6,50 @@ function Profile() {
   const [upcomingMeetups, setUpcomingMeetups] = useState([]);
   const [pastMeetups, setPastMeetups] = useState([]);
   const [loading, setLoading] = useState(true);
-  const user = getCurrentUser();
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  // Fix: Run only once on mount
   useEffect(() => {
+    const user = getCurrentUser();
     if (!user) {
       navigate('/login');
       return;
     }
     fetchUserMeetups();
-  }, [user, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchUserMeetups = async () => {
     try {
       setLoading(true);
+      setError(null);
 
-      const [upcoming, past] = await Promise.all([
-        getUserMeetups().catch(err => {
-          if (err.message === 'Unauthorized') throw err;
-          return [];
-        }),
-        getPastUserMeetups().catch(err => {
-          if (err.message === 'Unauthorized') throw err;
-          return [];
-        })
+      // Execute safely
+      const [upcomingRes, pastRes] = await Promise.allSettled([
+        getUserMeetups(),
+        getPastUserMeetups()
       ]);
 
-      setUpcomingMeetups(Array.isArray(upcoming) ? upcoming : []);
-      setPastMeetups(Array.isArray(past) ? past : []);
+      // Handle Upcoming
+      if (upcomingRes.status === 'fulfilled' && Array.isArray(upcomingRes.value)) {
+        setUpcomingMeetups(upcomingRes.value);
+      } else {
+        setUpcomingMeetups([]);
+      }
 
-    } catch (error) {
-      console.error('Error fetching user meetups:', error);
-      // Let's assume for now valid session. If invalid, logout and redirect.
+      // Handle Past
+      if (pastRes.status === 'fulfilled' && Array.isArray(pastRes.value)) {
+        setPastMeetups(pastRes.value);
+      } else {
+        setPastMeetups([]);
+      }
 
-      // Let's stick to a safe default:
+    } catch (err) {
+      console.error('Error fetching user meetups:', err);
+      setError('Failed to load profile data.');
       setUpcomingMeetups([]);
       setPastMeetups([]);
-
-      if (error.message.toLowerCase().includes('failed')) {
-        // Most likely auth or network. 
-        // If we strictly want to catch 401/403, we need to inspect the response in api.js.
-        // But since I already edited api.js and didn't expose status, I will just say:
-      }
     } finally {
       setLoading(false);
     }
@@ -58,10 +60,7 @@ function Profile() {
     navigate('/login');
   };
 
-  const styles = {
-    // ... we will use classes mostly
-  };
-
+  const user = getCurrentUser();
   if (!user) return null;
 
   return (
@@ -70,20 +69,39 @@ function Profile() {
         <Link to="/meetups" style={{ fontSize: '24px', fontWeight: 'bold', background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textDecoration: 'none' }}>Meetup App</Link>
         <div className="nav-links">
           <Link to="/meetups" className="btn-primary" style={{ textDecoration: 'none', fontSize: '14px' }}>Meetups</Link>
-          <button onClick={handleLogout} className="btn-primary" style={{ fontSize: '14px' }}>Logout</button>
+          <button
+            onClick={handleLogout}
+            style={{
+              background: 'transparent',
+              border: '1px solid var(--text-secondary)',
+              color: 'var(--text-secondary)',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            Logout
+          </button>
         </div>
       </div>
 
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div className="glass" style={{ padding: '40px', borderRadius: '24px', marginBottom: '30px', textAlign: 'center' }}>
           <div style={{ width: '80px', height: '80px', background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)', borderRadius: '50%', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: 'white', fontWeight: 'bold' }}>
-            {user.username.charAt(0).toUpperCase()}
+            {user.username ? user.username.charAt(0).toUpperCase() : '?'}
           </div>
           <h1 style={{ fontSize: '36px', fontWeight: '800', marginBottom: '8px', color: 'var(--text)' }}>
             {user.username}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>{user.email}</p>
         </div>
+
+        {error && (
+          <div style={{ textAlign: 'center', padding: '20px', color: 'white', background: 'rgba(255,0,0,0.2)', borderRadius: '12px', marginBottom: '30px' }}>
+            {error}
+          </div>
+        )}
 
         <div className="glass" style={{ padding: '30px', borderRadius: '24px', marginBottom: '30px' }}>
           <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', color: 'var(--text)' }}>Upcoming Meetups</h2>

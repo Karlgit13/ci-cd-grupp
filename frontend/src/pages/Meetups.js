@@ -13,13 +13,18 @@ function Meetups() {
   const user = getCurrentUser();
   const navigate = useNavigate();
 
+  // Run only on mount.
+  // We avoid strict dependency on filters for auto-fetching to prevent rapid re-fetching loops.
+  // Users will click "Search" or we will trigger explicitly.
   useEffect(() => {
     fetchMeetups();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchMeetups = async () => {
     try {
       setLoading(true);
+      // Pass the current state values to the API
       const data = await getAllMeetups({
         search: searchQuery,
         date: dateFilter,
@@ -29,13 +34,14 @@ function Meetups() {
       setMeetups(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching meetups:', error);
+      setMeetups([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleSearch = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     fetchMeetups();
   };
 
@@ -44,13 +50,28 @@ function Meetups() {
     setDateFilter('');
     setLocationFilter('');
     setCategoryFilter('');
+    // We can decide to fetch immediately or wait for user to click search.
+    // Let's fetch immediately for better UX on clear, but only after state settles? 
+    // Actually, because setState is async, we should probably fetch with empty params explicitly.
+    // Or just let the user click search.
+    // To be safe and "idempotent", let's re-fetch with empty params directly.
+
+    // We can't rely on state being updated yet.
+    fetchMeetupsOverride({});
   };
 
-  useEffect(() => {
-    if (!searchQuery && !dateFilter && !locationFilter && !categoryFilter) {
-      fetchMeetups();
+  const fetchMeetupsOverride = async (overrides) => {
+    try {
+      setLoading(true);
+      const data = await getAllMeetups(overrides);
+      setMeetups(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error fetching meetups:', error);
+      setMeetups([]);
+    } finally {
+      setLoading(false);
     }
-  }, [searchQuery, dateFilter, locationFilter, categoryFilter]);
+  };
 
   const handleLogout = () => {
     logout();
@@ -215,6 +236,26 @@ function Meetups() {
                 <option value="art">Art</option>
                 <option value="other">Other</option>
               </select>
+            </div>
+            <div style={{ gridColumn: '1 / -1', textAlign: 'right' }}>
+              <button
+                onClick={handleClearFilters}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--text-secondary)',
+                  color: 'var(--text-secondary)',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  marginRight: '10px'
+                }}
+              >
+                Clear All
+              </button>
+              <button className="btn-primary" onClick={handleSearch}>
+                Apply Filters
+              </button>
             </div>
           </div>
         )}
